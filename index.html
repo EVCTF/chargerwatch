@@ -68,11 +68,11 @@ img { max-width: 100%; display: block; }
   border-bottom: 3px solid var(--amber);
 }
 #hero h1 {
-  font-size: clamp(22px, 4vw, 36px);
+  font-size: clamp(18px, 3vw, 30px);
   font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: -0.5px;
-  max-width: 680px;
+  line-height: 1.3;
+  letter-spacing: -0.3px;
+  max-width: 620px;
   margin: 0 auto 10px;
 }
 #hero h1 em { color: var(--amber); font-style: normal; }
@@ -302,7 +302,7 @@ img { max-width: 100%; display: block; }
   #nav-menu-btn { display: block; }
 
   #hero { padding: 32px 16px 28px; }
-  #hero h1 { font-size: 22px; }
+  #hero h1 { font-size: 18px; line-height: 1.35; }
 
   .stat-item { padding: 12px 16px; min-width: 90px; }
   .stat-num { font-size: 18px; }
@@ -335,6 +335,20 @@ img { max-width: 100%; display: block; }
 @media (prefers-reduced-motion: reduce) {
   .spinner { animation: none; }
 }
+#map-scroll-overlay {
+  position: absolute; inset: 0; z-index: 450;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; cursor: pointer;
+}
+#map-scroll-overlay span {
+  background: rgba(0,0,0,0.55); color: #fff;
+  font-size: 13px; padding: 8px 16px; border-radius: 20px;
+  pointer-events: none; opacity: 0;
+  transition: opacity 0.3s;
+}
+#map-scroll-overlay:hover span,
+#map-scroll-overlay.hint span { opacity: 1; }
+#map-scroll-overlay.dismissed { display: none; }
 </style>
 </head>
 <body>
@@ -353,7 +367,7 @@ img { max-width: 100%; display: block; }
 
 <!-- HERO -->
 <header id="hero" role="banner">
-  <h1>Maryland promised <em>reliable,</em> accurately metered,<br>fairly taxed EV charging.<br>We track whether that promise is being kept.</h1>
+  <h1>Maryland promised <em>reliable,</em> accurately metered, fairly taxed EV charging. We track whether that promise is being kept.</h1>
   <p>A project of the <a href="https://pluginsites.org" target="_blank" rel="noopener">EV Charging Task Force</a> and <a href="https://pluginsites.org" target="_blank" rel="noopener">PlugInSites.org</a></p>
   <div class="hero-btns">
     <a href="#map-section" class="btn-primary">Explore the map</a>
@@ -408,6 +422,9 @@ img { max-width: 100%; display: block; }
 
   <div style="position:relative;">
     <div id="map" role="application" aria-label="Maryland EV charging station map"></div>
+    <div id="map-scroll-overlay" aria-hidden="true">
+      <span>Click to interact with map</span>
+    </div>
     <div id="map-loading" aria-live="polite">
       <div class="spinner"></div>Loading station data&hellip;
     </div>
@@ -585,7 +602,25 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
   var currentFilter = 'all', currentOwner = 'all', showClean = false;
   var allStations = [], markerObjs = [];
 
-  var map = L.map('map', { scrollWheelZoom: true, minZoom: 6, maxZoom: 17 });
+  var map = L.map('map', { scrollWheelZoom: false, minZoom: 6, maxZoom: 17 });
+
+  // Scroll trap fix: enable scroll zoom only after user clicks the map
+  var overlay = document.getElementById('map-scroll-overlay');
+  overlay.addEventListener('click', function() {
+    map.scrollWheelZoom.enable();
+    overlay.classList.add('dismissed');
+  });
+  // Show hint pill when user scrolls into the map area
+  var hintTimer;
+  document.addEventListener('wheel', function(e) {
+    var rect = document.getElementById('map').getBoundingClientRect();
+    if (!overlay.classList.contains('dismissed') &&
+        e.clientY >= rect.top && e.clientY <= rect.bottom) {
+      overlay.classList.add('hint');
+      clearTimeout(hintTimer);
+      hintTimer = setTimeout(function() { overlay.classList.remove('hint'); }, 1800);
+    }
+  }, { passive: true });
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19
