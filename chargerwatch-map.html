@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChargerWatch.org - Maryland DCFC Map</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; }
+#header { background: #1a1a1a; color: #fff; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+#header h1 { font-size: 18px; font-weight: 500; letter-spacing: -0.3px; }
+#header p { font-size: 12px; color: #999; }
+#controls { background: #fff; border-bottom: 1px solid #e5e5e3; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.filter-btn, .owner-btn, .toggle-btn { font-size: 12px; padding: 5px 12px; border: 1px solid #d0d0ce; background: #fff; border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+.filter-btn.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.owner-btn.active { background: #534AB7; color: #fff; border-color: #534AB7; }
+.toggle-btn { display: flex; align-items: center; gap: 6px; }
+.toggle-btn.active { background: #e8e6f8; color: #534AB7; border-color: #534AB7; }
+.toggle-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid #888; background: transparent; flex-shrink: 0; transition: all 0.15s; }
+.ctrl-sep { width: 1px; height: 24px; background: #e5e5e3; margin: 0 2px; }
+.ctrl-label { font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+#pin-count { font-size: 12px; color: #666; margin-left: auto; }
+#loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 2000; background: rgba(255,255,255,0.95); border: 1px solid #e5e5e3; border-radius: 8px; padding: 20px 28px; font-size: 14px; color: #444; text-align: center; }
+#loading-spinner { width: 24px; height: 24px; border: 2px solid #e5e5e3; border-top-color: #534AB7; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+#map { height: calc(100vh - 148px); }
+#legend { position: absolute; bottom: 24px; left: 12px; z-index: 1000; background: rgba(255,255,255,0.96); border: 1px solid #e5e5e3; border-radius: 6px; padding: 10px 14px; font-size: 11px; line-height: 1.4; }
+#legend h4 { font-size: 11px; font-weight: 600; margin-bottom: 6px; color: #444; }
+.leg-row { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; color: #555; }
+.leg-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+#stats { position: absolute; top: 12px; right: 12px; z-index: 1000; background: rgba(255,255,255,0.96); border: 1px solid #e5e5e3; border-radius: 6px; padding: 10px 14px; font-size: 12px; min-width: 170px; }
+#stats h4 { font-size: 11px; font-weight: 600; color: #444; margin-bottom: 6px; }
+.stat-row { display: flex; justify-content: space-between; gap: 16px; color: #555; margin-bottom: 3px; }
+.stat-num { font-weight: 500; color: #1a1a1a; }
+#detail { position: absolute; bottom: 24px; right: 12px; z-index: 1000; background: #fff; border: 1px solid #e5e5e3; border-radius: 6px; padding: 14px 16px; width: 310px; display: none; max-height: 58vh; overflow-y: auto; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+#detail h3 { font-size: 14px; font-weight: 500; margin-bottom: 2px; padding-right: 24px; line-height: 1.4; }
+#detail .meta { font-size: 11px; color: #888; margin-bottom: 10px; line-height: 1.5; }
+.issue-block { background: #f8f8f6; border-radius: 4px; padding: 10px; margin-bottom: 8px; border-left: 3px solid #ccc; }
+.issue-block.reliability { border-left-color: #993C1D; }
+.issue-block.weights_measures { border-left-color: #854F0B; }
+.issue-block.tax { border-left-color: #0F6E56; }
+.issue-tier { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; color: #888; }
+.issue-headline { font-size: 12px; line-height: 1.5; margin-bottom: 4px; color: #1a1a1a; }
+.issue-evidence { font-size: 11px; color: #777; line-height: 1.4; }
+.issue-filing { font-size: 11px; color: #999; font-style: italic; margin-top: 3px; }
+.action-btn { display: inline-block; font-size: 12px; color: #fff; background: #1a1a1a; border: none; border-radius: 4px; padding: 6px 12px; margin-top: 10px; cursor: pointer; }
+.plugshare-link { display: inline-block; font-size: 12px; color: #534AB7; margin-top: 8px; margin-left: 8px; text-decoration: none; }
+#close-detail { position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 16px; cursor: pointer; color: #888; line-height: 1; }
+#fetch-error { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 2000; background: #fff; border: 1px solid #f0c0c0; border-radius: 8px; padding: 20px 28px; font-size: 13px; color: #c00; text-align: center; max-width: 320px; }
+</style>
+</head>
+<body>
+<div id="header">
+  <h1>ChargerWatch.org</h1>
+  <p id="header-stats">Maryland DCFC accountability map &middot; loading&hellip;</p>
+</div>
+<div id="controls">
+  <span class="ctrl-label">Issue type</span>
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="reliability">Reliability (97% uptime)</button>
+  <button class="filter-btn" data-filter="weights_measures">Weights &amp; measures</button>
+  <button class="filter-btn" data-filter="tax">Tax collection</button>
+  <div class="ctrl-sep"></div>
+  <span class="ctrl-label">Ownership</span>
+  <button class="owner-btn active" data-owner="all">All</button>
+  <button class="owner-btn" data-owner="utility">Utility-owned</button>
+  <button class="owner-btn" data-owner="private">Private</button>
+  <button class="owner-btn" data-owner="municipal">Municipal</button>
+  <div class="ctrl-sep"></div>
+  <button class="toggle-btn" id="toggle-clean">
+    <span class="toggle-dot" id="toggle-dot"></span>Show all stations
+  </button>
+  <span id="pin-count"></span>
+</div>
+
+<div style="position:relative;">
+  <div id="map"></div>
+
+  <div id="loading">
+    <div id="loading-spinner"></div>
+    Loading station data&hellip;
+  </div>
+
+  <div id="fetch-error">
+    Could not load station data. Check your network connection and try reloading.
+  </div>
+
+  <div id="legend">
+    <h4>Issue type</h4>
+    <div class="leg-row"><span class="leg-dot" style="background:#993C1D;"></span>Reliability</div>
+    <div class="leg-row"><span class="leg-dot" style="background:#854F0B;"></span>Weights &amp; measures</div>
+    <div class="leg-row"><span class="leg-dot" style="background:#0F6E56;"></span>Tax collection</div>
+    <div class="leg-row"><span class="leg-dot" style="background:transparent;border:2px solid #aaa;width:11px;height:11px;"></span>No issue logged</div>
+    <h4 style="margin-top:8px;">Evidence tier</h4>
+    <div class="leg-row"><span class="leg-dot" style="background:#993C1D;"></span>Filed / verified</div>
+    <div class="leg-row"><span class="leg-dot" style="background:transparent;border:2px dashed #993C1D;width:11px;height:11px;"></span>Documented pattern</div>
+    <div class="leg-row"><span class="leg-dot" style="background:transparent;border:2px dotted #993C1D;width:11px;height:11px;"></span>Reported, unverified</div>
+  </div>
+
+  <div id="stats">
+    <h4>Current view</h4>
+    <div class="stat-row"><span>Visible stations</span><span class="stat-num" id="stat-visible">-</span></div>
+    <div class="stat-row"><span>With issues</span><span class="stat-num" id="stat-issues">-</span></div>
+    <div class="stat-row"><span>Utility-owned</span><span class="stat-num" id="stat-utility">-</span></div>
+    <div class="stat-row"><span>Filed / verified</span><span class="stat-num" id="stat-filed">-</span></div>
+  </div>
+
+  <div id="detail">
+    <button id="close-detail" aria-label="Close">&#x2715;</button>
+    <h3 id="d-name"></h3>
+    <div class="meta" id="d-meta"></div>
+    <div id="d-issues"></div>
+    <div id="d-actions"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script>
+(function() {
+  var STATIONS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQfprmsFMyabyF0mCLV_hNMTHvieBoixLHO0eSo6oGF0F0vCX63iEmZ2XOBHhJeNOeme8bg8Ydg1ktX/pub?gid=504650913&single=true&output=csv';
+  var ISSUES_URL   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQfprmsFMyabyF0mCLV_hNMTHvieBoixLHO0eSo6oGF0F0vCX63iEmZ2XOBHhJeNOeme8bg8Ydg1ktX/pub?gid=1236050046&single=true&output=csv';
+
+  var COLORS = { reliability: '#993C1D', weights_measures: '#854F0B', tax: '#0F6E56' };
+  var CLEAN_COLOR = '#888';
+  var currentFilter = 'all';
+  var currentOwner  = 'all';
+  var showClean     = false;
+  var allStations   = [];
+  var markerObjects = [];
+
+  var map = L.map('map', { scrollWheelZoom: true, minZoom: 6, maxZoom: 17 });
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors', maxZoom: 19
+  }).addTo(map);
+
+  // ---------- CSV parser ----------
+  function parseCSV(text) {
+    var lines = text.trim().split('\n');
+    var headers = splitCSVLine(lines[0]);
+    return lines.slice(1).map(function(line) {
+      var vals = splitCSVLine(line);
+      var obj = {};
+      headers.forEach(function(h, i) { obj[h.trim()] = (vals[i] || '').trim(); });
+      return obj;
+    });
+  }
+
+  function splitCSVLine(line) {
+    var result = [], cur = '', inQ = false;
+    for (var i = 0; i < line.length; i++) {
+      var c = line[i];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { result.push(cur); cur = ''; }
+      else { cur += c; }
+    }
+    result.push(cur);
+    return result;
+  }
+
+  // ---------- owner type ----------
+  function ownerType(network, name) {
+    var up = ['BGE -','Pepco -','DPL -','SMECO -','PHI -'];
+    if (up.some(function(p){ return name.startsWith(p); })) return 'utility';
+    if (network === 'EVI') return 'municipal';
+    if (network === 'Non_Networked') return 'unknown';
+    if (['Tesla','ChargePoint Network','eVgo Network','Blink Network','Electrify America',
+         'InCharge','EV Connect','FORD_CHARGE','IONNA','RIVIAN_ADVENTURE','FCN','Nayax',
+         'OpConnect','7CHARGE','Quick Charge','BP Pulse','Red E','SHELL_RECHARGE',
+         'Mercedes-Benz','JOLT','ChargeLab','ezVOLTz'].indexOf(network) !== -1) return 'private';
+    return 'unknown';
+  }
+
+  // ---------- icon ----------
+  function makeIcon(station) {
+    var hasIssue = station.issues.length > 0;
+    var color  = hasIssue ? COLORS[station.issues[0].category] : CLEAN_COLOR;
+    var size   = hasIssue ? 14 : 12;
+    var fill, border;
+    if (!hasIssue) {
+      fill = 'transparent'; border = '2px solid ' + CLEAN_COLOR;
+    } else if (station.issues[0].tier === 'reported') {
+      fill = 'transparent'; border = '2.5px dotted ' + color;
+    } else if (station.issues[0].tier === 'pattern') {
+      fill = 'transparent'; border = '2.5px dashed ' + color;
+    } else {
+      fill = color; border = '2.5px solid ' + color;
+    }
+    var html = '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+fill+';border:'+border+';box-sizing:border-box;"></div>';
+    return L.divIcon({ html: html, className: '', iconSize: [size,size], iconAnchor: [size/2,size/2] });
+  }
+
+  // ---------- detail panel ----------
+  function tierLabel(t) {
+    return t==='filed' ? 'Filed / verified' : t==='pattern' ? 'Documented pattern' : 'Reported, unverified';
+  }
+  function actionLabel(a) {
+    return {psc_comment:'Comment in PSC Case 9478',wm_complaint:'File a W&M complaint',
+            ag_complaint:'Contact the AG',opc_contact:'Contact the OPC',
+            tax:'Report to the Comptroller',public_comment:'Submit a public comment'}[a] || 'Take action';
+  }
+
+  function showDetail(station) {
+    document.getElementById('d-name').textContent = station.name;
+    document.getElementById('d-meta').innerHTML =
+      '<strong>'+station.operator+'</strong> &middot; '+station.city+
+      (station.kw ? ' &middot; '+station.kw+' kW' : '')+
+      (station.connectors ? ' &middot; '+station.connectors+' connector'+(station.connectors!=='1'?'s':'') : '')+
+      ' &middot; <em>'+(station.owner==='utility'?'Utility-owned &mdash; 97% uptime mandate applies':
+                        station.owner==='municipal'?'Municipal':'Privately operated')+'</em>';
+
+    var ih = '';
+    if (station.issues.length > 0) {
+      station.issues.forEach(function(iss) {
+        ih += '<div class="issue-block '+iss.category+'">' +
+          '<div class="issue-tier">'+tierLabel(iss.tier)+' &middot; '+iss.category.replace('_',' & ').replace('weights & measures','weights &amp; measures')+'</div>' +
+          '<div class="issue-headline">'+iss.headline+'</div>' +
+          '<div class="issue-evidence">'+iss.evidence_summary+'</div>' +
+          (iss.filing_reference ? '<div class="issue-filing">'+iss.filing_reference+'</div>' : '') +
+          '</div>';
+      });
+    } else {
+      ih = '<div style="font-size:12px;color:#888;padding:6px 0;">No issues logged for this station yet.</div>';
+    }
+    document.getElementById('d-issues').innerHTML = ih;
+
+    var ah = '';
+    if (station.issues.length > 0) {
+      ah += '<button class="action-btn">'+actionLabel(station.issues[0].suggested_action)+' &rarr;</button>';
+    }
+    ah += '<a href="'+station.plugshare+'" target="_blank" rel="noopener" class="plugshare-link">View on PlugShare &#8599;</a>';
+    document.getElementById('d-actions').innerHTML = ah;
+    document.getElementById('detail').style.display = 'block';
+  }
+
+  document.getElementById('close-detail').onclick = function() {
+    document.getElementById('detail').style.display = 'none';
+  };
+
+  // ---------- stats + filters ----------
+  function updateStats(visible) {
+    var wi = visible.filter(function(s){ return s.issues.length>0; }).length;
+    var ut = visible.filter(function(s){ return s.owner==='utility'; }).length;
+    var fi = visible.reduce(function(n,s){
+      return n + s.issues.filter(function(i){ return i.tier==='filed'; }).length;
+    }, 0);
+    document.getElementById('stat-visible').textContent = visible.length;
+    document.getElementById('stat-issues').textContent  = wi;
+    document.getElementById('stat-utility').textContent = ut;
+    document.getElementById('stat-filed').textContent   = fi;
+    document.getElementById('pin-count').textContent    = visible.length + ' stations shown';
+  }
+
+  function applyFilters() {
+    var visible = [];
+    markerObjects.forEach(function(obj) {
+      var s = obj.station;
+      var hasIssue   = s.issues.length > 0;
+      var matchF     = currentFilter === 'all' || s.issues.some(function(i){ return i.category===currentFilter; });
+      var matchO     = currentOwner  === 'all' || s.owner === currentOwner;
+      var matchClean = hasIssue || showClean;
+      if (matchF && matchO && matchClean) {
+        if (!map.hasLayer(obj.marker)) obj.marker.addTo(map);
+        visible.push(s);
+      } else {
+        if (map.hasLayer(obj.marker)) map.removeLayer(obj.marker);
+      }
+    });
+    updateStats(visible);
+    document.getElementById('detail').style.display = 'none';
+  }
+
+  document.querySelectorAll('.filter-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active'); });
+      this.classList.add('active');
+      currentFilter = this.getAttribute('data-filter');
+      applyFilters();
+    });
+  });
+  document.querySelectorAll('.owner-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.owner-btn').forEach(function(b){ b.classList.remove('active'); });
+      this.classList.add('active');
+      currentOwner = this.getAttribute('data-owner');
+      applyFilters();
+    });
+  });
+  document.getElementById('toggle-clean').addEventListener('click', function() {
+    showClean = !showClean;
+    this.classList.toggle('active', showClean);
+    var dot = document.getElementById('toggle-dot');
+    dot.style.background    = showClean ? '#534AB7' : 'transparent';
+    dot.style.borderColor   = showClean ? '#534AB7' : '#888';
+    applyFilters();
+  });
+
+  // ---------- build map ----------
+  function buildMap(stations, issues) {
+    // Index issues by serial
+    var issueMap = {};
+    issues.forEach(function(iss) {
+      var s = iss.serial.trim();
+      if (iss.visible_on_map !== 'TRUE') return;
+      if (!issueMap[s]) issueMap[s] = [];
+      issueMap[s].push(iss);
+    });
+
+    allStations = stations.map(function(row) {
+      var serial = row.Serial.trim();
+      return {
+        serial:     serial,
+        name:       row['Charging Location'].trim(),
+        operator:   row.EV_Network.trim(),
+        owner:      ownerType(row.EV_Network.trim(), row['Charging Location'].trim()),
+        address:    row['Street Address'].trim(),
+        city:       row.City.trim(),
+        lat:        parseFloat(row.Latitude_N),
+        lng:        parseFloat(row.Longitude_N),
+        kw:         row.kW.trim(),
+        connectors: row.DCFC.trim(),
+        plugshare:  row['PlugShare Link'].trim(),
+        issues:     issueMap[serial] || []
+      };
+    }).filter(function(s){ return !isNaN(s.lat) && !isNaN(s.lng); });
+
+    allStations.forEach(function(station) {
+      var marker = L.marker([station.lat, station.lng], { icon: makeIcon(station) });
+      marker.on('click', function(){ showDetail(station); });
+      if (station.issues.length > 0) marker.addTo(map);
+      markerObjects.push({ marker: marker, station: station });
+    });
+
+    var issueStations = allStations.filter(function(s){ return s.issues.length>0; });
+    updateStats(issueStations);
+    document.getElementById('pin-count').textContent = issueStations.length + ' stations shown';
+
+    var totalConnectors = allStations.reduce(function(n,s){ return n + (parseInt(s.connectors)||0); },0);
+    document.getElementById('header-stats').textContent =
+      'Maryland DCFC accountability map \u00b7 '+allStations.length+' stations \u00b7 '+totalConnectors.toLocaleString()+' connectors';
+
+    document.getElementById('loading').style.display = 'none';
+
+    // Maryland boundary
+    fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json')
+      .then(function(r){ return r.json(); })
+      .then(function(us){
+        var states = topojson.feature(us, us.objects.states);
+        var md = states.features.filter(function(f){ return f.properties && f.properties.name==='Maryland'; })[0];
+        if (md) {
+          var mdL = L.geoJSON(md, { style: { color:'#534AB7', weight:2, fill:false } }).addTo(map);
+          map.fitBounds(mdL.getBounds(), { padding:[20,20] });
+        } else {
+          map.setView([39.0,-76.7],7);
+        }
+      })
+      .catch(function(){ map.setView([39.0,-76.7],7); });
+  }
+
+  // ---------- fetch both sheets ----------
+  function fetchCSV(url) {
+    return fetch(url).then(function(r){
+      if (!r.ok) throw new Error('HTTP '+r.status);
+      return r.text();
+    }).then(parseCSV);
+  }
+
+  Promise.all([fetchCSV(STATIONS_URL), fetchCSV(ISSUES_URL)])
+    .then(function(results){ buildMap(results[0], results[1]); })
+    .catch(function(err){
+      console.error(err);
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('fetch-error').style.display = 'block';
+    });
+
+})();
+</script>
+</body>
+</html>
