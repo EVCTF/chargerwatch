@@ -602,7 +602,13 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
   var currentFilter = 'all', currentOwner = 'all', showClean = false;
   var allStations = [], markerObjs = [];
 
-  var map = L.map('map', { scrollWheelZoom: false, minZoom: 6, maxZoom: 17 });
+  var map = L.map('map', {
+    scrollWheelZoom: false,
+    minZoom: 7,
+    maxZoom: 17,
+    maxBounds: [[37.8, -80.0], [40.2, -74.8]],
+    maxBoundsViscosity: 0.85
+  });
 
   // Scroll trap fix: enable scroll zoom only after user clicks the map
   var overlay = document.getElementById('map-scroll-overlay');
@@ -794,9 +800,9 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
         var md=states.features.filter(function(f){return f.properties&&f.properties.name==='Maryland';})[0];
         if(md){
           var mdL=L.geoJSON(md,{style:{color:'#2B4B8C',weight:2,fill:false}}).addTo(map);
-          map.fitBounds(mdL.getBounds(),{padding:[16,16]});
-        } else { map.setView([39.0,-76.7],7); }
-      }).catch(function(){map.setView([39.0,-76.7],7);});
+          map.fitBounds(mdL.getBounds(),{padding:[16,16], maxZoom: 8});
+        } else { map.setView([39.0,-76.7],8); }
+      }).catch(function(){map.setView([39.0,-76.7],8);});
   }
 
   function fetchCSV(url){
