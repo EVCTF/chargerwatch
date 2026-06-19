@@ -3,377 +3,778 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ChargerWatch.org - Maryland DCFC Map</title>
+<title>ChargerWatch.org &mdash; Maryland EV Charging Accountability</title>
+<meta name="description" content="Tracking Maryland EV charging station reliability, weights and measures compliance, and tax collection. A project of the EV Charging Task Force and PlugInSites.org.">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; }
-#header { background: #1a1a1a; color: #fff; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
-#header h1 { font-size: 18px; font-weight: 500; letter-spacing: -0.3px; }
-#header p { font-size: 12px; color: #999; }
-#controls { background: #fff; border-bottom: 1px solid #e5e5e3; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.filter-btn, .owner-btn, .toggle-btn { font-size: 12px; padding: 5px 12px; border: 1px solid #d0d0ce; background: #fff; border-radius: 4px; cursor: pointer; transition: all 0.15s; }
-.filter-btn.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
-.owner-btn.active { background: #534AB7; color: #fff; border-color: #534AB7; }
+/* ── Reset & base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:        #F8F8F6;
+  --bg-alt:    #F0EDE6;
+  --bg-dark:   #141414;
+  --ink:       #141414;
+  --ink-mid:   #4A4A48;
+  --ink-light: #888884;
+  --rule:      #E0DDD6;
+  --blue:      #2B4B8C;
+  --blue-lt:   #E8EEF8;
+  --amber:     #C17D2A;
+  --amber-lt:  #FDF4E7;
+  --red:       #993C1D;
+  --brown:     #854F0B;
+  --green:     #0F6E56;
+  --radius:    6px;
+  --shadow:    0 2px 12px rgba(0,0,0,0.08);
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+img { max-width: 100%; display: block; }
+
+/* ── Nav ── */
+#nav {
+  position: sticky; top: 0; z-index: 900;
+  background: var(--bg-dark);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 52px;
+  border-bottom: 1px solid #2a2a2a;
+}
+#nav-logo {
+  font-size: 15px; font-weight: 600; letter-spacing: -0.2px;
+  color: #fff; text-decoration: none;
+}
+#nav-logo span { color: var(--amber); }
+#nav-links { display: flex; gap: 24px; list-style: none; }
+#nav-links a { font-size: 13px; color: #bbb; text-decoration: none; transition: color 0.15s; }
+#nav-links a:hover { color: #fff; }
+#nav-menu-btn { display: none; background: none; border: none; color: #bbb; font-size: 22px; cursor: pointer; line-height: 1; }
+
+/* ── Hero ── */
+#hero {
+  background: var(--bg-dark);
+  color: #fff;
+  text-align: center;
+  padding: 48px 24px 40px;
+  border-bottom: 3px solid var(--amber);
+}
+#hero h1 {
+  font-size: clamp(22px, 4vw, 36px);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.5px;
+  max-width: 680px;
+  margin: 0 auto 10px;
+}
+#hero h1 em { color: var(--amber); font-style: normal; }
+#hero p {
+  font-size: 13px; color: #999; margin-bottom: 24px;
+}
+#hero p a { color: #bbb; text-decoration: underline; }
+.hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--blue); color: #fff;
+  font-size: 14px; font-weight: 500;
+  padding: 10px 20px; border-radius: var(--radius);
+  border: none; cursor: pointer; text-decoration: none;
+  transition: background 0.15s;
+}
+.btn-primary:hover { background: #1e3870; text-decoration: none; color: #fff; }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; color: #ddd;
+  font-size: 14px; font-weight: 500;
+  padding: 10px 20px; border-radius: var(--radius);
+  border: 1px solid #444; cursor: pointer; text-decoration: none;
+  transition: all 0.15s;
+}
+.btn-secondary:hover { border-color: #888; color: #fff; text-decoration: none; }
+
+/* ── Stats strip ── */
+#stats-strip {
+  background: var(--bg-alt);
+  border-bottom: 1px solid var(--rule);
+  display: flex; justify-content: center; flex-wrap: wrap;
+  gap: 0;
+}
+.stat-item {
+  padding: 14px 28px;
+  text-align: center;
+  border-right: 1px solid var(--rule);
+  min-width: 120px;
+}
+.stat-item:last-child { border-right: none; }
+.stat-num {
+  font-size: 22px; font-weight: 700; color: var(--ink); line-height: 1.1;
+  display: block;
+}
+.stat-num.amber { color: var(--amber); }
+.stat-label { font-size: 11px; color: var(--ink-light); text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ── Section scaffold ── */
+.section { padding: 40px 24px; max-width: 1100px; margin: 0 auto; }
+.section-eyebrow {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-light);
+  margin-bottom: 12px;
+}
+.section-title {
+  font-size: clamp(18px, 2.5vw, 24px); font-weight: 700;
+  letter-spacing: -0.3px; margin-bottom: 8px;
+}
+.section-rule {
+  border: none; border-top: 1px solid var(--rule); margin: 0;
+}
+
+/* ── Map section ── */
+#map-section { padding: 0; background: #fff; border-bottom: 1px solid var(--rule); }
+#map-controls {
+  padding: 10px 16px;
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  background: #fff; border-bottom: 1px solid var(--rule);
+}
+.ctrl-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-light); }
+.ctrl-sep { width: 1px; height: 22px; background: var(--rule); margin: 0 2px; }
+.filter-btn, .owner-btn, .toggle-btn {
+  font-size: 12px; padding: 5px 11px;
+  border: 1px solid var(--rule); background: #fff;
+  border-radius: 4px; cursor: pointer; transition: all 0.15s;
+  color: var(--ink);
+}
+.filter-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.owner-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
 .toggle-btn { display: flex; align-items: center; gap: 6px; }
-.toggle-btn.active { background: #e8e6f8; color: #534AB7; border-color: #534AB7; }
-.toggle-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid #888; background: transparent; flex-shrink: 0; transition: all 0.15s; }
-.ctrl-sep { width: 1px; height: 24px; background: #e5e5e3; margin: 0 2px; }
-.ctrl-label { font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
-#pin-count { font-size: 12px; color: #666; margin-left: auto; }
-#loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 2000; background: rgba(255,255,255,0.95); border: 1px solid #e5e5e3; border-radius: 8px; padding: 20px 28px; font-size: 14px; color: #444; text-align: center; }
-#loading-spinner { width: 24px; height: 24px; border: 2px solid #e5e5e3; border-top-color: #534AB7; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
+.toggle-btn.active { background: var(--blue-lt); color: var(--blue); border-color: var(--blue); }
+.toggle-dot { width: 9px; height: 9px; border-radius: 50%; border: 2px solid #aaa; background: transparent; transition: all 0.15s; flex-shrink: 0; }
+#pin-count { font-size: 12px; color: var(--ink-light); margin-left: auto; white-space: nowrap; }
+#map {
+  height: 60vh; min-height: 320px; max-height: 580px;
+  width: 100%; position: relative;
+}
+#map-loading {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  z-index: 500; background: rgba(255,255,255,0.95);
+  border: 1px solid var(--rule); border-radius: 8px;
+  padding: 18px 24px; text-align: center; font-size: 13px; color: var(--ink-mid);
+}
+.spinner {
+  width: 22px; height: 22px;
+  border: 2px solid var(--rule); border-top-color: var(--blue);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+  margin: 0 auto 8px;
+}
 @keyframes spin { to { transform: rotate(360deg); } }
-#map { height: calc(100vh - 148px); }
-#legend { position: absolute; bottom: 24px; left: 12px; z-index: 1000; background: rgba(255,255,255,0.96); border: 1px solid #e5e5e3; border-radius: 6px; padding: 10px 14px; font-size: 11px; line-height: 1.4; }
-#legend h4 { font-size: 11px; font-weight: 600; margin-bottom: 6px; color: #444; }
-.leg-row { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; color: #555; }
-.leg-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-#stats { position: absolute; top: 12px; right: 12px; z-index: 1000; background: rgba(255,255,255,0.96); border: 1px solid #e5e5e3; border-radius: 6px; padding: 10px 14px; font-size: 12px; min-width: 170px; }
-#stats h4 { font-size: 11px; font-weight: 600; color: #444; margin-bottom: 6px; }
-.stat-row { display: flex; justify-content: space-between; gap: 16px; color: #555; margin-bottom: 3px; }
-.stat-num { font-weight: 500; color: #1a1a1a; }
-#detail { position: absolute; bottom: 24px; right: 12px; z-index: 1000; background: #fff; border: 1px solid #e5e5e3; border-radius: 6px; padding: 14px 16px; width: 310px; display: none; max-height: 58vh; overflow-y: auto; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-#detail h3 { font-size: 14px; font-weight: 500; margin-bottom: 2px; padding-right: 24px; line-height: 1.4; }
-#detail .meta { font-size: 11px; color: #888; margin-bottom: 10px; line-height: 1.5; }
-.issue-block { background: #f8f8f6; border-radius: 4px; padding: 10px; margin-bottom: 8px; border-left: 3px solid #ccc; }
-.issue-block.reliability { border-left-color: #993C1D; }
-.issue-block.weights_measures { border-left-color: #854F0B; }
-.issue-block.tax { border-left-color: #0F6E56; }
-.issue-tier { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; color: #888; }
-.issue-headline { font-size: 12px; line-height: 1.5; margin-bottom: 4px; color: #1a1a1a; }
-.issue-evidence { font-size: 11px; color: #777; line-height: 1.4; }
-.issue-filing { font-size: 11px; color: #999; font-style: italic; margin-top: 3px; }
-.action-btn { display: inline-block; font-size: 12px; color: #fff; background: #1a1a1a; border: none; border-radius: 4px; padding: 6px 12px; margin-top: 10px; cursor: pointer; }
-.plugshare-link { display: inline-block; font-size: 12px; color: #534AB7; margin-top: 8px; margin-left: 8px; text-decoration: none; }
-#close-detail { position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 16px; cursor: pointer; color: #888; line-height: 1; }
-#fetch-error { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 2000; background: #fff; border: 1px solid #f0c0c0; border-radius: 8px; padding: 20px 28px; font-size: 13px; color: #c00; text-align: center; max-width: 320px; }
+#map-legend {
+  position: absolute; bottom: 16px; left: 12px; z-index: 400;
+  background: rgba(255,255,255,0.96); border: 1px solid var(--rule);
+  border-radius: var(--radius); padding: 10px 13px; font-size: 11px;
+}
+#map-legend h5 { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-light); margin-bottom: 5px; }
+.leg-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; color: var(--ink-mid); line-height: 1.3; }
+.leg-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+#detail-panel {
+  position: absolute; bottom: 16px; right: 12px; z-index: 400;
+  background: #fff; border: 1px solid var(--rule);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 14px 16px; width: 300px; max-height: 55vh; overflow-y: auto;
+  display: none;
+}
+#detail-panel h3 { font-size: 14px; font-weight: 600; line-height: 1.4; padding-right: 22px; margin-bottom: 2px; }
+.detail-meta { font-size: 11px; color: var(--ink-light); margin-bottom: 10px; line-height: 1.5; }
+.issue-card {
+  background: var(--bg); border-radius: 4px; padding: 10px 11px;
+  margin-bottom: 8px; border-left: 3px solid var(--rule);
+}
+.issue-card.reliability { border-left-color: var(--red); }
+.issue-card.weights_measures { border-left-color: var(--brown); }
+.issue-card.tax { border-left-color: var(--green); }
+.issue-tier { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-light); margin-bottom: 3px; }
+.issue-headline { font-size: 12px; line-height: 1.5; color: var(--ink); margin-bottom: 3px; }
+.issue-evidence { font-size: 11px; color: var(--ink-light); line-height: 1.4; }
+.issue-filing { font-size: 11px; color: var(--ink-light); font-style: italic; margin-top: 3px; }
+.detail-actions { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn-action {
+  font-size: 12px; padding: 6px 12px;
+  background: var(--ink); color: #fff; border: none;
+  border-radius: 4px; cursor: pointer; text-decoration: none;
+  display: inline-block;
+}
+.btn-action:hover { background: #333; text-decoration: none; color: #fff; }
+.btn-plugshare { font-size: 12px; color: var(--blue); }
+#detail-close {
+  position: absolute; top: 10px; right: 10px;
+  background: none; border: none; color: var(--ink-light);
+  font-size: 16px; cursor: pointer; line-height: 1;
+}
+
+/* ── This month ── */
+#this-month { background: var(--bg-alt); border-bottom: 1px solid var(--rule); }
+.month-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 16px; }
+.month-card {
+  background: #fff; border: 1px solid var(--rule);
+  border-radius: var(--radius); padding: 14px 16px;
+}
+.month-card-num { font-size: 26px; font-weight: 700; color: var(--amber); line-height: 1; margin-bottom: 4px; }
+.month-card-label { font-size: 13px; color: var(--ink-mid); line-height: 1.4; }
+
+/* ── Explainer ── */
+#explainer { border-bottom: 1px solid var(--rule); }
+.explainer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px; }
+.explainer-card {
+  border-top: 3px solid var(--rule); padding-top: 14px;
+}
+.explainer-card.reliability { border-top-color: var(--red); }
+.explainer-card.wm { border-top-color: var(--brown); }
+.explainer-card.tax { border-top-color: var(--green); }
+.explainer-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.explainer-card p { font-size: 13px; color: var(--ink-mid); line-height: 1.6; }
+.explainer-card a { font-size: 12px; color: var(--blue); display: inline-block; margin-top: 8px; }
+
+/* ── Cases ── */
+#cases { border-bottom: 1px solid var(--rule); }
+.cases-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+.case-card {
+  border: 1px solid var(--rule); border-radius: var(--radius);
+  padding: 16px 18px; background: #fff;
+  border-top: 3px solid var(--red);
+}
+.case-card.wm { border-top-color: var(--brown); }
+.case-tag {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--ink-light); margin-bottom: 6px;
+}
+.case-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; line-height: 1.35; }
+.case-card p { font-size: 13px; color: var(--ink-mid); line-height: 1.55; }
+.case-status {
+  display: inline-block; font-size: 11px; font-weight: 600;
+  padding: 3px 8px; border-radius: 3px;
+  background: var(--amber-lt); color: var(--amber);
+  margin-top: 10px;
+}
+
+/* ── Action ── */
+#action { border-bottom: 1px solid var(--rule); }
+.action-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-top: 16px; }
+.action-card {
+  border: 1px solid var(--rule); border-radius: var(--radius);
+  padding: 16px; background: #fff; text-align: center;
+}
+.action-icon { font-size: 24px; margin-bottom: 8px; }
+.action-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.action-card p { font-size: 12px; color: var(--ink-mid); line-height: 1.5; margin-bottom: 12px; }
+.btn-outline {
+  display: inline-block; font-size: 12px; font-weight: 500;
+  padding: 7px 14px; border-radius: 4px;
+  border: 1px solid var(--blue); color: var(--blue);
+  text-decoration: none; transition: all 0.15s;
+}
+.btn-outline:hover { background: var(--blue); color: #fff; text-decoration: none; }
+
+/* ── Footer ── */
+#footer {
+  background: var(--bg-dark); color: #888;
+  padding: 28px 24px; text-align: center;
+  font-size: 12px; line-height: 1.8;
+}
+#footer a { color: #aaa; }
+#footer a:hover { color: #fff; }
+
+/* ── Mobile ── */
+@media (max-width: 680px) {
+  #nav-links { display: none; }
+  #nav-links.open {
+    display: flex; flex-direction: column; gap: 0;
+    position: absolute; top: 52px; left: 0; right: 0;
+    background: var(--bg-dark); border-bottom: 1px solid #2a2a2a;
+    padding: 12px 0; z-index: 1000;
+  }
+  #nav-links.open a { padding: 10px 24px; display: block; font-size: 15px; color: #ccc; }
+  #nav-menu-btn { display: block; }
+
+  #hero { padding: 32px 16px 28px; }
+  #hero h1 { font-size: 22px; }
+
+  .stat-item { padding: 12px 16px; min-width: 90px; }
+  .stat-num { font-size: 18px; }
+
+  #map { height: 55vh; }
+  #map-controls { padding: 8px 12px; gap: 6px; }
+  .filter-btn, .owner-btn, .toggle-btn { font-size: 11px; padding: 4px 9px; }
+  .ctrl-sep { display: none; }
+  .ctrl-label { display: none; }
+  #pin-count { display: none; }
+
+  #detail-panel {
+    bottom: 0; right: 0; left: 0; width: 100%;
+    border-radius: var(--radius) var(--radius) 0 0;
+    max-height: 50vh;
+  }
+  #map-legend { display: none; }
+
+  .month-grid { grid-template-columns: 1fr; }
+  .explainer-grid { grid-template-columns: 1fr; }
+  .cases-grid { grid-template-columns: 1fr; }
+  .action-grid { grid-template-columns: 1fr; }
+
+  .section { padding: 28px 16px; }
+}
+@media (max-width: 900px) and (min-width: 681px) {
+  .explainer-grid { grid-template-columns: 1fr 1fr; }
+  .action-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation: none; }
+}
 </style>
 </head>
 <body>
-<div id="header">
-  <h1>ChargerWatch.org</h1>
-  <p id="header-stats">Maryland DCFC accountability map &middot; loading&hellip;</p>
-</div>
-<div id="controls">
-  <span class="ctrl-label">Issue type</span>
-  <button class="filter-btn active" data-filter="all">All</button>
-  <button class="filter-btn" data-filter="reliability">Reliability (97% uptime)</button>
-  <button class="filter-btn" data-filter="weights_measures">Weights &amp; measures</button>
-  <button class="filter-btn" data-filter="tax">Tax collection</button>
-  <div class="ctrl-sep"></div>
-  <span class="ctrl-label">Ownership</span>
-  <button class="owner-btn active" data-owner="all">All</button>
-  <button class="owner-btn" data-owner="utility">Utility-owned</button>
-  <button class="owner-btn" data-owner="private">Private</button>
-  <button class="owner-btn" data-owner="municipal">Municipal</button>
-  <div class="ctrl-sep"></div>
-  <button class="toggle-btn" id="toggle-clean">
-    <span class="toggle-dot" id="toggle-dot"></span>Show all stations
-  </button>
-  <span id="pin-count"></span>
-</div>
 
-<div style="position:relative;">
-  <div id="map"></div>
+<!-- NAV -->
+<nav id="nav" role="navigation" aria-label="Main navigation">
+  <a href="/" id="nav-logo">Charger<span>Watch</span>.org</a>
+  <ul id="nav-links">
+    <li><a href="#map-section">Map</a></li>
+    <li><a href="#cases">Cases</a></li>
+    <li><a href="#action">How to file</a></li>
+    <li><a href="#about">About</a></li>
+  </ul>
+  <button id="nav-menu-btn" aria-label="Open menu" aria-expanded="false">&#9776;</button>
+</nav>
 
-  <div id="loading">
-    <div id="loading-spinner"></div>
-    Loading station data&hellip;
+<!-- HERO -->
+<header id="hero" role="banner">
+  <h1>Maryland promised <em>reliable,</em> accurately metered,<br>fairly taxed EV charging.<br>We track whether that promise is being kept.</h1>
+  <p>A project of the <a href="https://pluginsites.org" target="_blank" rel="noopener">EV Charging Task Force</a> and <a href="https://pluginsites.org" target="_blank" rel="noopener">PlugInSites.org</a></p>
+  <div class="hero-btns">
+    <a href="#map-section" class="btn-primary">Explore the map</a>
+    <a href="#action" class="btn-secondary">Report a problem</a>
   </div>
+</header>
 
-  <div id="fetch-error">
-    Could not load station data. Check your network connection and try reloading.
+<!-- STATS STRIP -->
+<div id="stats-strip" role="region" aria-label="Summary statistics">
+  <div class="stat-item">
+    <span class="stat-num" id="s-stations">398</span>
+    <span class="stat-label">Stations tracked</span>
   </div>
-
-  <div id="legend">
-    <h4>Issue type</h4>
-    <div class="leg-row"><span class="leg-dot" style="background:#993C1D;"></span>Reliability</div>
-    <div class="leg-row"><span class="leg-dot" style="background:#854F0B;"></span>Weights &amp; measures</div>
-    <div class="leg-row"><span class="leg-dot" style="background:#0F6E56;"></span>Tax collection</div>
-    <div class="leg-row"><span class="leg-dot" style="background:transparent;border:2px solid #aaa;width:11px;height:11px;"></span>No issue logged</div>
-    <h4 style="margin-top:8px;">Evidence tier</h4>
-    <div class="leg-row"><span class="leg-dot" style="background:#993C1D;"></span>Filed / verified</div>
-    <div class="leg-row"><span class="leg-dot" style="background:transparent;border:2px dashed #993C1D;width:11px;height:11px;"></span>Documented pattern</div>
-    <div class="leg-row"><span class="leg-dot" style="background:transparent;border:2px dotted #993C1D;width:11px;height:11px;"></span>Reported, unverified</div>
+  <div class="stat-item">
+    <span class="stat-num" id="s-connectors">1,532</span>
+    <span class="stat-label">DCFC connectors</span>
   </div>
-
-  <div id="stats">
-    <h4>Current view</h4>
-    <div class="stat-row"><span>Visible stations</span><span class="stat-num" id="stat-visible">-</span></div>
-    <div class="stat-row"><span>With issues</span><span class="stat-num" id="stat-issues">-</span></div>
-    <div class="stat-row"><span>Utility-owned</span><span class="stat-num" id="stat-utility">-</span></div>
-    <div class="stat-row"><span>Filed / verified</span><span class="stat-num" id="stat-filed">-</span></div>
+  <div class="stat-item">
+    <span class="stat-num amber" id="s-issues">3</span>
+    <span class="stat-label">Stations with issues</span>
   </div>
-
-  <div id="detail">
-    <button id="close-detail" aria-label="Close">&#x2715;</button>
-    <h3 id="d-name"></h3>
-    <div class="meta" id="d-meta"></div>
-    <div id="d-issues"></div>
-    <div id="d-actions"></div>
+  <div class="stat-item">
+    <span class="stat-num amber" id="s-filed">4</span>
+    <span class="stat-label">Filed &amp; verified issues</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num" id="s-utility">80</span>
+    <span class="stat-label">Utility-owned (97% mandate)</span>
   </div>
 </div>
 
+<!-- MAP -->
+<section id="map-section" aria-label="Accountability map">
+  <div id="map-controls" role="toolbar" aria-label="Map filters">
+    <span class="ctrl-label">Issue</span>
+    <button class="filter-btn active" data-filter="all">All issues</button>
+    <button class="filter-btn" data-filter="reliability">Reliability</button>
+    <button class="filter-btn" data-filter="weights_measures">Weights &amp; measures</button>
+    <button class="filter-btn" data-filter="tax">Tax collection</button>
+    <span class="ctrl-sep"></span>
+    <span class="ctrl-label">Owner</span>
+    <button class="owner-btn active" data-owner="all">All</button>
+    <button class="owner-btn" data-owner="utility">Utility-owned</button>
+    <button class="owner-btn" data-owner="private">Private</button>
+    <button class="owner-btn" data-owner="municipal">Municipal</button>
+    <span class="ctrl-sep"></span>
+    <button class="toggle-btn" id="toggle-clean" aria-pressed="false">
+      <span class="toggle-dot" id="toggle-dot"></span>Show all stations
+    </button>
+    <span id="pin-count"></span>
+  </div>
+
+  <div style="position:relative;">
+    <div id="map" role="application" aria-label="Maryland EV charging station map"></div>
+    <div id="map-loading" aria-live="polite">
+      <div class="spinner"></div>Loading station data&hellip;
+    </div>
+    <div id="map-legend" aria-label="Map legend">
+      <h5>Issue type</h5>
+      <div class="leg-row"><span class="leg-dot" style="background:var(--red)"></span>Reliability</div>
+      <div class="leg-row"><span class="leg-dot" style="background:var(--brown)"></span>Weights &amp; measures</div>
+      <div class="leg-row"><span class="leg-dot" style="background:var(--green)"></span>Tax collection</div>
+      <div class="leg-row"><span class="leg-dot" style="background:transparent;border:2px solid #aaa;width:10px;height:10px;"></span>No issue logged</div>
+      <h5 style="margin-top:8px;">Evidence tier</h5>
+      <div class="leg-row"><span class="leg-dot" style="background:var(--red)"></span>Filed / verified</div>
+      <div class="leg-row"><span class="leg-dot" style="background:transparent;border:2px dashed var(--red);width:10px;height:10px;"></span>Documented pattern</div>
+      <div class="leg-row"><span class="leg-dot" style="background:transparent;border:2px dotted var(--red);width:10px;height:10px;"></span>Reported, unverified</div>
+    </div>
+    <div id="detail-panel" role="region" aria-label="Station detail" aria-live="polite">
+      <button id="detail-close" aria-label="Close detail panel">&#x2715;</button>
+      <h3 id="d-name"></h3>
+      <div class="detail-meta" id="d-meta"></div>
+      <div id="d-issues"></div>
+      <div class="detail-actions" id="d-actions"></div>
+    </div>
+  </div>
+</section>
+<hr class="section-rule">
+
+<!-- THIS MONTH -->
+<section id="this-month" aria-labelledby="month-heading">
+  <div class="section">
+    <p class="section-eyebrow">Section 2 &middot; What we found this month</p>
+    <h2 class="section-title" id="month-heading">June 2026</h2>
+    <div class="month-grid">
+      <div class="month-card">
+        <div class="month-card-num">3</div>
+        <div class="month-card-label">Stations under formal PSC review in Case No. 9478</div>
+      </div>
+      <div class="month-card">
+        <div class="month-card-num">10+</div>
+        <div class="month-card-label">Weeks of total outage documented at Clinton Park and Ride</div>
+      </div>
+      <div class="month-card">
+        <div class="month-card-num">2</div>
+        <div class="month-card-label">Weights &amp; measures complaints validated by MDA inspectors</div>
+      </div>
+    </div>
+  </div>
+</section>
+<hr class="section-rule">
+
+<!-- EXPLAINER -->
+<section id="explainer" aria-labelledby="explainer-heading">
+  <div class="section">
+    <p class="section-eyebrow">Section 3 &middot; The three standards we track</p>
+    <h2 class="section-title" id="explainer-heading">What Maryland regulators are required to enforce</h2>
+    <div class="explainer-grid">
+      <div class="explainer-card reliability">
+        <h3>Reliability: the 97% uptime standard</h3>
+        <p>Maryland law (HB 834, 2023) requires investor-owned utility chargers to maintain 97% annual uptime, matching the federal NEVI standard. The PSC receives quarterly reports. As of this writing, no utility has faced a financial penalty for missing the target.</p>
+        <a href="#cases">See reliability cases &rarr;</a>
+      </div>
+      <div class="explainer-card wm">
+        <h3>Weights &amp; measures: accurate billing</h3>
+        <p>The Maryland Department of Agriculture's Weights and Measures Division regulates whether chargers are registered, labeled correctly, and bill accurately per kilowatt-hour. A charger can meet the uptime standard and still have a weights and measures problem. These are separate agencies and separate legal hooks.</p>
+        <a href="#cases">See weights &amp; measures cases &rarr;</a>
+      </div>
+      <div class="explainer-card tax">
+        <h3>Tax collection: EV drivers pay too</h3>
+        <p>Sales tax on EV charging sessions flows to Maryland's Transportation Trust Fund. Chargers that collect $0.00 in sales tax on sessions may be exploiting a pricing loophole that disadvantages compliant operators and denies the state revenue it is owed.</p>
+        <a href="#action">Report a tax issue &rarr;</a>
+      </div>
+    </div>
+  </div>
+</section>
+<hr class="section-rule">
+
+<!-- CASES -->
+<section id="cases" aria-labelledby="cases-heading">
+  <div class="section">
+    <p class="section-eyebrow">Section 4 &middot; Featured case files</p>
+    <h2 class="section-title" id="cases-heading">Documented cases with formal filings</h2>
+    <div class="cases-grid">
+      <div class="case-card">
+        <div class="case-tag">Reliability &middot; BGE &middot; Anne Arundel County</div>
+        <h3>BWI Airport Cell Phone Lot: persistent derating and repeated outages</h3>
+        <p>Statistical analysis of full-year 2025 session data showed near-continuous derating on two connectors, a 27.6% fleet-wide zero-kWh failure rate, and 681 persistent failure runs. A complete outage was documented Memorial Day 2026.</p>
+        <span class="case-status">Under review &middot; PSC Case No. 9478</span>
+      </div>
+      <div class="case-card wm">
+        <div class="case-tag">Weights &amp; measures &middot; Pepco &middot; Prince George's County</div>
+        <h3>Bladensburg Town Hall DCFC: forensic evidence of systematic overbilling</h3>
+        <p>Forensic electrical analysis showed a roughly 5:1 discrepancy between current billed and current delivered. A separate SWTCH app anomaly allowed CHAdeMO activation while CCS was displayed. Exhibits filed in PSC Case No. 9478; matter escalated to the Maryland AG.</p>
+        <span class="case-status">Under review &middot; PSC Case No. 9478</span>
+      </div>
+      <div class="case-card">
+        <div class="case-tag">Reliability &middot; Pepco &middot; Prince George's County</div>
+        <h3>Clinton Park and Ride: total failure exceeding ten weeks</h3>
+        <p>Analysis of more than 112,000 PHI DCFC sessions across 470+ stations identified a sustained total outage at this station lasting over ten weeks, a distinct failure signature not consistent with routine maintenance.</p>
+        <span class="case-status">Open &middot; PSC Case No. 9478</span>
+      </div>
+      <div class="case-card wm">
+        <div class="case-tag">Weights &amp; measures &middot; ChargePoint &middot; Anne Arundel County</div>
+        <h3>Hotel at Arundel Preserve: undisclosed per-session fee</h3>
+        <p>A $0.25 per-session service fee was not reflected in the posted per-kWh price at the time of the complaint. A weights and measures complaint was filed with MDA and validated by an inspector.</p>
+        <span class="case-status">Resolved &middot; MDA W&amp;M complaint</span>
+      </div>
+    </div>
+  </div>
+</section>
+<hr class="section-rule">
+
+<!-- ACTION -->
+<section id="action" aria-labelledby="action-heading">
+  <div class="section">
+    <p class="section-eyebrow">Section 5 &middot; Take action</p>
+    <h2 class="section-title" id="action-heading">How to make your voice count</h2>
+    <div class="action-grid">
+      <div class="action-card">
+        <div class="action-icon">&#9878;</div>
+        <h3>File a PSC comment</h3>
+        <p>Comment in PSC Case No. 9478 on utility EV charger reliability. Your experience as an EV driver is on-the-record evidence.</p>
+        <a href="https://www.psc.state.md.us" target="_blank" rel="noopener" class="btn-outline">Go to PSC e-filing &rarr;</a>
+      </div>
+      <div class="action-card">
+        <div class="action-icon">&#9878;</div>
+        <h3>File a W&amp;M complaint</h3>
+        <p>If a charger billed you incorrectly or didn't show the price before you plugged in, the Maryland Department of Agriculture Weights and Measures Division wants to know.</p>
+        <a href="https://mda.maryland.gov/weights_measures/Pages/consumer_complaint.aspx" target="_blank" rel="noopener" class="btn-outline">File with MDA &rarr;</a>
+      </div>
+      <div class="action-card">
+        <div class="action-icon">&#9993;</div>
+        <h3>Report a problem to us</h3>
+        <p>Saw something wrong at a Maryland DCFC station? Tell us. We review every report and add credible, evidence-backed tips to the map.</p>
+        <a href="https://forms.gle/placeholder" target="_blank" rel="noopener" class="btn-outline">Submit a tip &rarr;</a>
+      </div>
+    </div>
+  </div>
+</section>
+<hr class="section-rule">
+
+<!-- ABOUT -->
+<section id="about" aria-labelledby="about-heading">
+  <div class="section" style="max-width:720px;">
+    <p class="section-eyebrow">About this site</p>
+    <h2 class="section-title" id="about-heading">Who we are and how we work</h2>
+    <p style="color:var(--ink-mid);font-size:15px;line-height:1.75;margin-bottom:14px;">ChargerWatch.org is a project of the <strong>EV Charging Task Force (EVCTF)</strong>, a Maryland-based volunteer citizen watchdog group, published in partnership with <a href="https://pluginsites.org" target="_blank" rel="noopener">PlugInSites.org</a>. The EVCTF is an active intervenor in Maryland PSC proceedings and a participant in the PSC EV Work Group.</p>
+    <p style="color:var(--ink-mid);font-size:15px;line-height:1.75;margin-bottom:14px;">Every station on the map is drawn from a verified inventory of Maryland DC fast chargers. Issues are classified by evidence tier: filed and verified (formal PSC, MDA, or AG filing), documented pattern (data-backed but not yet formally filed), or reported and unverified (community tip with supporting evidence, pending review). We show our work and we say what we don't know.</p>
+    <p style="color:var(--ink-mid);font-size:15px;line-height:1.75;">The EVCTF has been quoted in the Washington Post, Baltimore Sun, and Politico. Our founder has 14 years of EV driving experience across 48 states and DC.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="footer" role="contentinfo">
+  <p>ChargerWatch.org &middot; A project of the <a href="https://pluginsites.org">EV Charging Task Force</a> and <a href="https://pluginsites.org">PlugInSites.org</a></p>
+  <p style="margin-top:4px;"><a href="#map-section">Map</a> &middot; <a href="#cases">Cases</a> &middot; <a href="#action">How to file</a> &middot; <a href="#about">About</a></p>
+  <p style="margin-top:8px;font-size:11px;color:#555;">Station data updated via Google Sheets. Map tiles &copy; OpenStreetMap contributors. Boundary data &copy; US Census Bureau.</p>
+</footer>
+
+<!-- SCRIPTS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script>
+// ── Mobile nav toggle ──
+document.getElementById('nav-menu-btn').addEventListener('click', function() {
+  var links = document.getElementById('nav-links');
+  var open = links.classList.toggle('open');
+  this.setAttribute('aria-expanded', open);
+});
+
+// ── Map ──
 (function() {
-  var STATIONS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQfprmsFMyabyF0mCLV_hNMTHvieBoixLHO0eSo6oGF0F0vCX63iEmZ2XOBHhJeNOeme8bg8Ydg1ktX/pub?gid=504650913&single=true&output=csv';
+  var STATIONS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQfprmsFMyabyF0mCLV_hNMTHvieBoixLHO0eSo6oGF0F0vCX63iEmZ2XOBHhJeNOeme8bg8Ydg1ktX/pub?output=csv';
   var ISSUES_URL   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQfprmsFMyabyF0mCLV_hNMTHvieBoixLHO0eSo6oGF0F0vCX63iEmZ2XOBHhJeNOeme8bg8Ydg1ktX/pub?gid=1236050046&single=true&output=csv';
 
   var COLORS = { reliability: '#993C1D', weights_measures: '#854F0B', tax: '#0F6E56' };
-  var CLEAN_COLOR = '#888';
-  var currentFilter = 'all';
-  var currentOwner  = 'all';
-  var showClean     = false;
-  var allStations   = [];
-  var markerObjects = [];
+  var CLEAN  = '#888';
+  var currentFilter = 'all', currentOwner = 'all', showClean = false;
+  var allStations = [], markerObjs = [];
 
   var map = L.map('map', { scrollWheelZoom: true, minZoom: 6, maxZoom: 17 });
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors', maxZoom: 19
+    attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19
   }).addTo(map);
 
-  // ---------- CSV parser ----------
-  function parseCSV(text) {
-    var lines = text.trim().split('\n');
-    var headers = splitCSVLine(lines[0]);
-    return lines.slice(1).map(function(line) {
-      var vals = splitCSVLine(line);
-      var obj = {};
-      headers.forEach(function(h, i) { obj[h.trim()] = (vals[i] || '').trim(); });
-      return obj;
+  function parseCSV(txt) {
+    var lines = txt.trim().split('\n'), hdrs = splitLine(lines[0]);
+    return lines.slice(1).map(function(l) {
+      var v = splitLine(l), o = {};
+      hdrs.forEach(function(h,i){ o[h.trim()] = (v[i]||'').trim(); });
+      return o;
     });
   }
-
-  function splitCSVLine(line) {
-    var result = [], cur = '', inQ = false;
-    for (var i = 0; i < line.length; i++) {
-      var c = line[i];
-      if (c === '"') { inQ = !inQ; }
-      else if (c === ',' && !inQ) { result.push(cur); cur = ''; }
-      else { cur += c; }
+  function splitLine(l) {
+    var res=[], cur='', q=false;
+    for(var i=0;i<l.length;i++){
+      var c=l[i];
+      if(c==='"'){q=!q;}
+      else if(c===','&&!q){res.push(cur);cur='';}
+      else{cur+=c;}
     }
-    result.push(cur);
-    return result;
+    res.push(cur); return res;
   }
-
-  // ---------- owner type ----------
-  function ownerType(network, name) {
-    var up = ['BGE -','Pepco -','DPL -','SMECO -','PHI -'];
-    if (up.some(function(p){ return name.startsWith(p); })) return 'utility';
-    if (network === 'EVI') return 'municipal';
-    if (network === 'Non_Networked') return 'unknown';
-    if (['Tesla','ChargePoint Network','eVgo Network','Blink Network','Electrify America',
-         'InCharge','EV Connect','FORD_CHARGE','IONNA','RIVIAN_ADVENTURE','FCN','Nayax',
-         'OpConnect','7CHARGE','Quick Charge','BP Pulse','Red E','SHELL_RECHARGE',
-         'Mercedes-Benz','JOLT','ChargeLab','ezVOLTz'].indexOf(network) !== -1) return 'private';
-    return 'unknown';
+  function ownerType(net, name) {
+    if(['BGE -','Pepco -','DPL -','SMECO -','PHI -'].some(function(p){return name.startsWith(p);})) return 'utility';
+    if(net==='EVI') return 'municipal';
+    if(net==='Non_Networked') return 'unknown';
+    return 'private';
   }
-
-  // ---------- icon ----------
-  function makeIcon(station) {
-    var hasIssue = station.issues.length > 0;
-    var color  = hasIssue ? COLORS[station.issues[0].category] : CLEAN_COLOR;
-    var size   = hasIssue ? 14 : 12;
-    var fill, border;
-    if (!hasIssue) {
-      fill = 'transparent'; border = '2px solid ' + CLEAN_COLOR;
-    } else if (station.issues[0].tier === 'reported') {
-      fill = 'transparent'; border = '2.5px dotted ' + color;
-    } else if (station.issues[0].tier === 'pattern') {
-      fill = 'transparent'; border = '2.5px dashed ' + color;
-    } else {
-      fill = color; border = '2.5px solid ' + color;
-    }
-    var html = '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+fill+';border:'+border+';box-sizing:border-box;"></div>';
-    return L.divIcon({ html: html, className: '', iconSize: [size,size], iconAnchor: [size/2,size/2] });
+  function makeIcon(s) {
+    var has = s.issues.length > 0;
+    var col = has ? COLORS[s.issues[0].category] : CLEAN;
+    var sz  = has ? 14 : 12;
+    var fill, bdr;
+    if(!has){ fill='transparent'; bdr='2px solid '+CLEAN; }
+    else if(s.issues[0].tier==='reported'){ fill='transparent'; bdr='2.5px dotted '+col; }
+    else if(s.issues[0].tier==='pattern'){ fill='transparent'; bdr='2.5px dashed '+col; }
+    else{ fill=col; bdr='2.5px solid '+col; }
+    var h='<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+fill+';border:'+bdr+';box-sizing:border-box;"></div>';
+    return L.divIcon({html:h,className:'',iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
   }
-
-  // ---------- detail panel ----------
-  function tierLabel(t) {
-    return t==='filed' ? 'Filed / verified' : t==='pattern' ? 'Documented pattern' : 'Reported, unverified';
-  }
-  function actionLabel(a) {
+  function tierLabel(t){ return t==='filed'?'Filed / verified':t==='pattern'?'Documented pattern':'Reported, unverified'; }
+  function actionLabel(a){
     return {psc_comment:'Comment in PSC Case 9478',wm_complaint:'File a W&M complaint',
             ag_complaint:'Contact the AG',opc_contact:'Contact the OPC',
-            tax:'Report to the Comptroller',public_comment:'Submit a public comment'}[a] || 'Take action';
+            tax:'Report to Comptroller',public_comment:'Submit public comment'}[a]||'Take action';
   }
 
-  function showDetail(station) {
-    document.getElementById('d-name').textContent = station.name;
+  function showDetail(s) {
+    document.getElementById('d-name').textContent = s.name;
     document.getElementById('d-meta').innerHTML =
-      '<strong>'+station.operator+'</strong> &middot; '+station.city+
-      (station.kw ? ' &middot; '+station.kw+' kW' : '')+
-      (station.connectors ? ' &middot; '+station.connectors+' connector'+(station.connectors!=='1'?'s':'') : '')+
-      ' &middot; <em>'+(station.owner==='utility'?'Utility-owned &mdash; 97% uptime mandate applies':
-                        station.owner==='municipal'?'Municipal':'Privately operated')+'</em>';
-
-    var ih = '';
-    if (station.issues.length > 0) {
-      station.issues.forEach(function(iss) {
-        ih += '<div class="issue-block '+iss.category+'">' +
-          '<div class="issue-tier">'+tierLabel(iss.tier)+' &middot; '+iss.category.replace('_',' & ').replace('weights & measures','weights &amp; measures')+'</div>' +
-          '<div class="issue-headline">'+iss.headline+'</div>' +
-          '<div class="issue-evidence">'+iss.evidence_summary+'</div>' +
-          (iss.filing_reference ? '<div class="issue-filing">'+iss.filing_reference+'</div>' : '') +
+      '<strong>'+s.operator+'</strong> &middot; '+s.city+
+      (s.kw?' &middot; '+s.kw+' kW':'')+
+      (s.connectors?' &middot; '+s.connectors+' connector'+(s.connectors!=='1'?'s':''):'')+
+      ' &middot; <em>'+(s.owner==='utility'?'Utility-owned &mdash; 97% uptime mandate applies':
+        s.owner==='municipal'?'Municipal':'Privately operated')+'</em>';
+    var ih='';
+    if(s.issues.length>0){
+      s.issues.forEach(function(iss){
+        ih+='<div class="issue-card '+iss.category+'">'+
+          '<div class="issue-tier">'+tierLabel(iss.tier)+' &middot; '+iss.category.replace('_',' &amp; ').replace('weights &amp; measures','weights &amp; measures')+'</div>'+
+          '<div class="issue-headline">'+iss.headline+'</div>'+
+          '<div class="issue-evidence">'+iss.evidence_summary+'</div>'+
+          (iss.filing_reference?'<div class="issue-filing">'+iss.filing_reference+'</div>':'')+
           '</div>';
       });
     } else {
-      ih = '<div style="font-size:12px;color:#888;padding:6px 0;">No issues logged for this station yet.</div>';
+      ih='<p style="font-size:12px;color:var(--ink-light);padding:6px 0;">No issues logged for this station yet.</p>';
     }
     document.getElementById('d-issues').innerHTML = ih;
-
-    var ah = '';
-    if (station.issues.length > 0) {
-      ah += '<button class="action-btn">'+actionLabel(station.issues[0].suggested_action)+' &rarr;</button>';
+    var ah='';
+    if(s.issues.length>0){
+      ah+='<a href="#action" class="btn-action">'+actionLabel(s.issues[0].suggested_action)+' &rarr;</a>';
     }
-    ah += '<a href="'+station.plugshare+'" target="_blank" rel="noopener" class="plugshare-link">View on PlugShare &#8599;</a>';
+    ah+='<a href="'+s.plugshare+'" target="_blank" rel="noopener" class="btn-plugshare">PlugShare &#8599;</a>';
     document.getElementById('d-actions').innerHTML = ah;
-    document.getElementById('detail').style.display = 'block';
+    document.getElementById('detail-panel').style.display = 'block';
   }
 
-  document.getElementById('close-detail').onclick = function() {
-    document.getElementById('detail').style.display = 'none';
+  document.getElementById('detail-close').onclick = function(){
+    document.getElementById('detail-panel').style.display='none';
   };
 
-  // ---------- stats + filters ----------
   function updateStats(visible) {
-    var wi = visible.filter(function(s){ return s.issues.length>0; }).length;
-    var ut = visible.filter(function(s){ return s.owner==='utility'; }).length;
-    var fi = visible.reduce(function(n,s){
-      return n + s.issues.filter(function(i){ return i.tier==='filed'; }).length;
-    }, 0);
-    document.getElementById('stat-visible').textContent = visible.length;
-    document.getElementById('stat-issues').textContent  = wi;
-    document.getElementById('stat-utility').textContent = ut;
-    document.getElementById('stat-filed').textContent   = fi;
-    document.getElementById('pin-count').textContent    = visible.length + ' stations shown';
+    var wi=visible.filter(function(s){return s.issues.length>0;}).length;
+    var ut=visible.filter(function(s){return s.owner==='utility';}).length;
+    var fi=visible.reduce(function(n,s){return n+s.issues.filter(function(i){return i.tier==='filed';}).length;},0);
+    document.getElementById('s-stations').textContent = visible.length;
+    document.getElementById('s-issues').textContent   = wi;
+    document.getElementById('s-utility').textContent  = ut;
+    document.getElementById('s-filed').textContent    = fi;
+    document.getElementById('pin-count').textContent  = visible.length+' stations shown';
   }
 
   function applyFilters() {
-    var visible = [];
-    markerObjects.forEach(function(obj) {
-      var s = obj.station;
-      var hasIssue   = s.issues.length > 0;
-      var matchF     = currentFilter === 'all' || s.issues.some(function(i){ return i.category===currentFilter; });
-      var matchO     = currentOwner  === 'all' || s.owner === currentOwner;
-      var matchClean = hasIssue || showClean;
-      if (matchF && matchO && matchClean) {
-        if (!map.hasLayer(obj.marker)) obj.marker.addTo(map);
-        visible.push(s);
-      } else {
-        if (map.hasLayer(obj.marker)) map.removeLayer(obj.marker);
-      }
+    var visible=[];
+    markerObjs.forEach(function(obj){
+      var s=obj.station, has=s.issues.length>0;
+      var mF=currentFilter==='all'||s.issues.some(function(i){return i.category===currentFilter;});
+      var mO=currentOwner==='all'||s.owner===currentOwner;
+      var mC=has||showClean;
+      if(mF&&mO&&mC){if(!map.hasLayer(obj.marker))obj.marker.addTo(map);visible.push(s);}
+      else{if(map.hasLayer(obj.marker))map.removeLayer(obj.marker);}
     });
     updateStats(visible);
-    document.getElementById('detail').style.display = 'none';
+    document.getElementById('detail-panel').style.display='none';
   }
 
-  document.querySelectorAll('.filter-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active'); });
-      this.classList.add('active');
-      currentFilter = this.getAttribute('data-filter');
-      applyFilters();
+  document.querySelectorAll('.filter-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
+      this.classList.add('active'); currentFilter=this.getAttribute('data-filter'); applyFilters();
     });
   });
-  document.querySelectorAll('.owner-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('.owner-btn').forEach(function(b){ b.classList.remove('active'); });
-      this.classList.add('active');
-      currentOwner = this.getAttribute('data-owner');
-      applyFilters();
+  document.querySelectorAll('.owner-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.owner-btn').forEach(function(b){b.classList.remove('active');});
+      this.classList.add('active'); currentOwner=this.getAttribute('data-owner'); applyFilters();
     });
   });
-  document.getElementById('toggle-clean').addEventListener('click', function() {
-    showClean = !showClean;
-    this.classList.toggle('active', showClean);
-    var dot = document.getElementById('toggle-dot');
-    dot.style.background    = showClean ? '#534AB7' : 'transparent';
-    dot.style.borderColor   = showClean ? '#534AB7' : '#888';
+  document.getElementById('toggle-clean').addEventListener('click',function(){
+    showClean=!showClean;
+    this.classList.toggle('active',showClean);
+    this.setAttribute('aria-pressed',showClean);
+    var dot=document.getElementById('toggle-dot');
+    dot.style.background=showClean?'var(--blue)':'transparent';
+    dot.style.borderColor=showClean?'var(--blue)':'#aaa';
     applyFilters();
   });
 
-  // ---------- build map ----------
   function buildMap(stations, issues) {
-    // Index issues by serial
-    var issueMap = {};
-    issues.forEach(function(iss) {
-      var s = iss.serial.trim();
-      if (iss.visible_on_map !== 'TRUE') return;
-      if (!issueMap[s]) issueMap[s] = [];
-      issueMap[s].push(iss);
+    var issMap={};
+    issues.forEach(function(iss){
+      var s=iss.serial.trim();
+      if(iss.visible_on_map!=='TRUE')return;
+      if(!issMap[s])issMap[s]=[];
+      issMap[s].push(iss);
     });
-
-    allStations = stations.map(function(row) {
-      var serial = row.Serial.trim();
+    allStations=stations.map(function(row){
+      var ser=row.Serial.trim();
       return {
-        serial:     serial,
-        name:       row['Charging Location'].trim(),
-        operator:   row.EV_Network.trim(),
-        owner:      ownerType(row.EV_Network.trim(), row['Charging Location'].trim()),
-        address:    row['Street Address'].trim(),
-        city:       row.City.trim(),
-        lat:        parseFloat(row.Latitude_N),
-        lng:        parseFloat(row.Longitude_N),
-        kw:         row.kW.trim(),
-        connectors: row.DCFC.trim(),
-        plugshare:  row['PlugShare Link'].trim(),
-        issues:     issueMap[serial] || []
+        serial:ser, name:row['Charging Location'].trim(),
+        operator:row.EV_Network.trim(),
+        owner:ownerType(row.EV_Network.trim(),row['Charging Location'].trim()),
+        city:row.City.trim(), address:row['Street Address'].trim(),
+        lat:parseFloat(row.Latitude_N), lng:parseFloat(row.Longitude_N),
+        kw:row.kW.trim(), connectors:row.DCFC.trim(),
+        plugshare:row['PlugShare Link'].trim(),
+        issues:issMap[ser]||[]
       };
-    }).filter(function(s){ return !isNaN(s.lat) && !isNaN(s.lng); });
+    }).filter(function(s){return !isNaN(s.lat)&&!isNaN(s.lng);});
 
-    allStations.forEach(function(station) {
-      var marker = L.marker([station.lat, station.lng], { icon: makeIcon(station) });
-      marker.on('click', function(){ showDetail(station); });
-      if (station.issues.length > 0) marker.addTo(map);
-      markerObjects.push({ marker: marker, station: station });
+    var totalConn=allStations.reduce(function(n,s){return n+(parseInt(s.connectors)||0);},0);
+    document.getElementById('s-connectors').textContent=totalConn.toLocaleString();
+
+    allStations.forEach(function(s){
+      var mk=L.marker([s.lat,s.lng],{icon:makeIcon(s)});
+      mk.on('click',function(){showDetail(s);});
+      if(s.issues.length>0)mk.addTo(map);
+      markerObjs.push({marker:mk,station:s});
     });
 
-    var issueStations = allStations.filter(function(s){ return s.issues.length>0; });
+    var issueStations=allStations.filter(function(s){return s.issues.length>0;});
     updateStats(issueStations);
-    document.getElementById('pin-count').textContent = issueStations.length + ' stations shown';
+    document.getElementById('map-loading').style.display='none';
 
-    var totalConnectors = allStations.reduce(function(n,s){ return n + (parseInt(s.connectors)||0); },0);
-    document.getElementById('header-stats').textContent =
-      'Maryland DCFC accountability map \u00b7 '+allStations.length+' stations \u00b7 '+totalConnectors.toLocaleString()+' connectors';
-
-    document.getElementById('loading').style.display = 'none';
-
-    // Maryland boundary
     fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json')
-      .then(function(r){ return r.json(); })
+      .then(function(r){return r.json();})
       .then(function(us){
-        var states = topojson.feature(us, us.objects.states);
-        var md = states.features.filter(function(f){ return f.properties && f.properties.name==='Maryland'; })[0];
-        if (md) {
-          var mdL = L.geoJSON(md, { style: { color:'#534AB7', weight:2, fill:false } }).addTo(map);
-          map.fitBounds(mdL.getBounds(), { padding:[20,20] });
-        } else {
-          map.setView([39.0,-76.7],7);
-        }
-      })
-      .catch(function(){ map.setView([39.0,-76.7],7); });
+        var states=topojson.feature(us,us.objects.states);
+        var md=states.features.filter(function(f){return f.properties&&f.properties.name==='Maryland';})[0];
+        if(md){
+          var mdL=L.geoJSON(md,{style:{color:'#2B4B8C',weight:2,fill:false}}).addTo(map);
+          map.fitBounds(mdL.getBounds(),{padding:[16,16]});
+        } else { map.setView([39.0,-76.7],7); }
+      }).catch(function(){map.setView([39.0,-76.7],7);});
   }
 
-  // ---------- fetch both sheets ----------
-  function fetchCSV(url) {
-    return fetch(url).then(function(r){
-      if (!r.ok) throw new Error('HTTP '+r.status);
-      return r.text();
-    }).then(parseCSV);
+  function fetchCSV(url){
+    return fetch(url).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();}).then(parseCSV);
   }
 
-  Promise.all([fetchCSV(STATIONS_URL), fetchCSV(ISSUES_URL)])
-    .then(function(results){ buildMap(results[0], results[1]); })
+  Promise.all([fetchCSV(STATIONS_URL),fetchCSV(ISSUES_URL)])
+    .then(function(res){buildMap(res[0],res[1]);})
     .catch(function(err){
       console.error(err);
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('fetch-error').style.display = 'block';
+      var el=document.getElementById('map-loading');
+      el.innerHTML='Could not load station data. Please reload.';
     });
-
 })();
 </script>
 </body>
