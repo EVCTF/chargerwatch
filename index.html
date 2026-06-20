@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ChargerWatch.org &mdash; Maryland EV Charging Accountability</title>
 <meta name="description" content="Tracking Maryland EV charging station reliability, weights and measures compliance, and tax collection. A project of the EV Charging Task Force and PlugInSites.org.">
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="shortcut icon" href="favicon.svg">
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <style>
@@ -369,7 +367,7 @@ img { max-width: 100%; display: block; }
 
 <!-- HERO -->
 <header id="hero" role="banner">
-  <h1>Maryland promised <em>reliable</em> EV charging that is properly billed and taxed. We track whether that promise is being kept.</h1>
+  <h1>Maryland promised <em>reliable,</em> accurately metered, fairly taxed EV charging. We track whether that promise is being kept.</h1>
   <p>A project of the <a href="https://pluginsites.org" target="_blank" rel="noopener">EV Charging Task Force</a> and <a href="https://pluginsites.org" target="_blank" rel="noopener">PlugInSites.org</a></p>
   <div class="hero-btns">
     <a href="#map-section" class="btn-primary">Explore the map</a>
@@ -379,6 +377,10 @@ img { max-width: 100%; display: block; }
 
 <!-- STATS STRIP -->
 <div id="stats-strip" role="region" aria-label="Summary statistics">
+  <div class="stat-item">
+    <span class="stat-num" id="s-stations">398</span>
+    <span class="stat-label">Stations tracked</span>
+  </div>
   <div class="stat-item">
     <span class="stat-num" id="s-connectors">1,532</span>
     <span class="stat-label">DCFC connectors</span>
@@ -393,7 +395,7 @@ img { max-width: 100%; display: block; }
   </div>
   <div class="stat-item">
     <span class="stat-num" id="s-utility">80</span>
-    <span class="stat-label">Utility-owned stations</span>
+    <span class="stat-label">Utility-owned (97% mandate)</span>
   </div>
 </div>
 
@@ -592,29 +594,23 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
 
 // ── Map ──
 (function() {
-  var PROXY = 'https://script.google.com/macros/s/AKfycbwbiKT8mCWSwMVcgDdRqKm95lsovhNYhSCKPZ6Q03y5uMfKauOr9YLaqqxVJs6Xx3Q/exec';
-  var STATIONS_URL = PROXY + '?sheet=stations';
-  var ISSUES_URL   = PROXY + '?sheet=issues';
+  var STATIONS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQfprmsFMyabyF0mCLV_hNMTHvieBoixLHO0eSo6oGF0F0vCX63iEmZ2XOBHhJeNOeme8bg8Ydg1ktX/pub?output=csv';
+  var ISSUES_URL   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQfprmsFMyabyF0mCLV_hNMTHvieBoixLHO0eSo6oGF0F0vCX63iEmZ2XOBHhJeNOeme8bg8Ydg1ktX/pub?gid=1236050046&single=true&output=csv';
 
   var COLORS = { reliability: '#993C1D', weights_measures: '#854F0B', tax: '#0F6E56' };
   var CLEAN  = '#888';
   var currentFilter = 'all', currentOwner = 'all', showClean = false;
   var allStations = [], markerObjs = [];
 
-  var map = L.map('map', {
-    scrollWheelZoom: false,
-    minZoom: 7,
-    maxZoom: 17,
-    maxBounds: [[37.8, -80.0], [40.2, -74.8]],
-    maxBoundsViscosity: 0.85
-  });
+  var map = L.map('map', { scrollWheelZoom: false, minZoom: 6, maxZoom: 17 });
 
-  // Scroll trap fix
+  // Scroll trap fix: enable scroll zoom only after user clicks the map
   var overlay = document.getElementById('map-scroll-overlay');
   overlay.addEventListener('click', function() {
     map.scrollWheelZoom.enable();
     overlay.classList.add('dismissed');
   });
+  // Show hint pill when user scrolls into the map area
   var hintTimer;
   document.addEventListener('wheel', function(e) {
     var rect = document.getElementById('map').getBoundingClientRect();
@@ -625,236 +621,195 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
       hintTimer = setTimeout(function() { overlay.classList.remove('hint'); }, 1800);
     }
   }, { passive: true });
-
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19
   }).addTo(map);
 
   function parseCSV(txt) {
-    var lines = txt.trim().split('\n');
-    var hdrs = splitLine(lines[0]);
+    var lines = txt.trim().split('\n'), hdrs = splitLine(lines[0]);
     return lines.slice(1).map(function(l) {
       var v = splitLine(l), o = {};
-      hdrs.forEach(function(h, i) { o[h.trim()] = (v[i] || '').trim(); });
+      hdrs.forEach(function(h,i){ o[h.trim()] = (v[i]||'').trim(); });
       return o;
     });
   }
-
   function splitLine(l) {
-    var res = [], cur = '', q = false;
-    for (var i = 0; i < l.length; i++) {
-      var c = l[i];
-      if (c === '"') { q = !q; }
-      else if (c === ',' && !q) { res.push(cur); cur = ''; }
-      else { cur += c; }
+    var res=[], cur='', q=false;
+    for(var i=0;i<l.length;i++){
+      var c=l[i];
+      if(c==='"'){q=!q;}
+      else if(c===','&&!q){res.push(cur);cur='';}
+      else{cur+=c;}
     }
-    res.push(cur);
-    return res;
+    res.push(cur); return res;
   }
-
   function ownerType(net, name) {
-    if (['BGE -','Pepco -','DPL -','SMECO -','PHI -'].some(function(p) { return name.startsWith(p); })) return 'utility';
-    if (net === 'EVI') return 'municipal';
-    if (net === 'Non_Networked') return 'unknown';
+    if(['BGE -','Pepco -','DPL -','SMECO -','PHI -'].some(function(p){return name.startsWith(p);})) return 'utility';
+    if(net==='EVI') return 'municipal';
+    if(net==='Non_Networked') return 'unknown';
     return 'private';
   }
-
   function makeIcon(s) {
     var has = s.issues.length > 0;
     var col = has ? COLORS[s.issues[0].category] : CLEAN;
     var sz  = has ? 14 : 12;
     var fill, bdr;
-    if (!has) { fill = 'transparent'; bdr = '2px solid ' + CLEAN; }
-    else if (s.issues[0].tier === 'reported') { fill = 'transparent'; bdr = '2.5px dotted ' + col; }
-    else if (s.issues[0].tier === 'pattern')  { fill = 'transparent'; bdr = '2.5px dashed ' + col; }
-    else { fill = col; bdr = '2.5px solid ' + col; }
-    var h = '<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+fill+';border:'+bdr+';box-sizing:border-box;"></div>';
-    return L.divIcon({ html: h, className: '', iconSize: [sz, sz], iconAnchor: [sz/2, sz/2] });
+    if(!has){ fill='transparent'; bdr='2px solid '+CLEAN; }
+    else if(s.issues[0].tier==='reported'){ fill='transparent'; bdr='2.5px dotted '+col; }
+    else if(s.issues[0].tier==='pattern'){ fill='transparent'; bdr='2.5px dashed '+col; }
+    else{ fill=col; bdr='2.5px solid '+col; }
+    var h='<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+fill+';border:'+bdr+';box-sizing:border-box;"></div>';
+    return L.divIcon({html:h,className:'',iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
   }
-
-  function tierLabel(t) {
-    return t === 'filed' ? 'Filed / verified' : t === 'pattern' ? 'Documented pattern' : 'Reported, unverified';
-  }
-
-  function actionLabel(a) {
-    return { psc_comment: 'Comment in PSC Case 9478', wm_complaint: 'File a W&M complaint',
-             ag_complaint: 'Contact the AG', opc_contact: 'Contact the OPC',
-             tax: 'Report to Comptroller', public_comment: 'Submit public comment' }[a] || 'Take action';
+  function tierLabel(t){ return t==='filed'?'Filed / verified':t==='pattern'?'Documented pattern':'Reported, unverified'; }
+  function actionLabel(a){
+    return {psc_comment:'Comment in PSC Case 9478',wm_complaint:'File a W&M complaint',
+            ag_complaint:'Contact the AG',opc_contact:'Contact the OPC',
+            tax:'Report to Comptroller',public_comment:'Submit public comment'}[a]||'Take action';
   }
 
   function showDetail(s) {
     document.getElementById('d-name').textContent = s.name;
     document.getElementById('d-meta').innerHTML =
-      '<strong>' + s.operator + '</strong> &middot; ' + s.city +
-      (s.kw ? ' &middot; ' + s.kw + ' kW' : '') +
-      (s.connectors ? ' &middot; ' + s.connectors + ' connector' + (s.connectors !== '1' ? 's' : '') : '') +
-      ' &middot; <em>' + (s.owner === 'utility' ? 'Utility-owned &mdash; 97% uptime mandate applies' :
-        s.owner === 'municipal' ? 'Municipal' : 'Privately operated') + '</em>';
-    var ih = '';
-    if (s.issues.length > 0) {
-      s.issues.forEach(function(iss) {
-        ih += '<div class="issue-card ' + iss.category + '">' +
-          '<div class="issue-tier">' + tierLabel(iss.tier) + ' &middot; ' + iss.category.replace('_', ' & ') + '</div>' +
-          '<div class="issue-headline">' + iss.headline + '</div>' +
-          '<div class="issue-evidence">' + iss.evidence_summary + '</div>' +
-          (iss.filing_reference ? '<div class="issue-filing">' + iss.filing_reference + '</div>' : '') +
+      '<strong>'+s.operator+'</strong> &middot; '+s.city+
+      (s.kw?' &middot; '+s.kw+' kW':'')+
+      (s.connectors?' &middot; '+s.connectors+' connector'+(s.connectors!=='1'?'s':''):'')+
+      ' &middot; <em>'+(s.owner==='utility'?'Utility-owned &mdash; 97% uptime mandate applies':
+        s.owner==='municipal'?'Municipal':'Privately operated')+'</em>';
+    var ih='';
+    if(s.issues.length>0){
+      s.issues.forEach(function(iss){
+        ih+='<div class="issue-card '+iss.category+'">'+
+          '<div class="issue-tier">'+tierLabel(iss.tier)+' &middot; '+iss.category.replace('_',' &amp; ').replace('weights &amp; measures','weights &amp; measures')+'</div>'+
+          '<div class="issue-headline">'+iss.headline+'</div>'+
+          '<div class="issue-evidence">'+iss.evidence_summary+'</div>'+
+          (iss.filing_reference?'<div class="issue-filing">'+iss.filing_reference+'</div>':'')+
           '</div>';
       });
     } else {
-      ih = '<p style="font-size:12px;color:var(--ink-light);padding:6px 0;">No issues logged for this station yet.</p>';
+      ih='<p style="font-size:12px;color:var(--ink-light);padding:6px 0;">No issues logged for this station yet.</p>';
     }
     document.getElementById('d-issues').innerHTML = ih;
-    var ah = '';
-    if (s.issues.length > 0) {
-      ah += '<a href="#action" class="btn-action">' + actionLabel(s.issues[0].suggested_action) + ' &rarr;</a>';
+    var ah='';
+    if(s.issues.length>0){
+      ah+='<a href="#action" class="btn-action">'+actionLabel(s.issues[0].suggested_action)+' &rarr;</a>';
     }
-    ah += '<a href="' + s.plugshare + '" target="_blank" rel="noopener" class="btn-plugshare">PlugShare &#8599;</a>';
+    ah+='<a href="'+s.plugshare+'" target="_blank" rel="noopener" class="btn-plugshare">PlugShare &#8599;</a>';
     document.getElementById('d-actions').innerHTML = ah;
     document.getElementById('detail-panel').style.display = 'block';
   }
 
-  document.getElementById('detail-close').onclick = function() {
-    document.getElementById('detail-panel').style.display = 'none';
+  document.getElementById('detail-close').onclick = function(){
+    document.getElementById('detail-panel').style.display='none';
   };
 
   function updateStats(visible) {
-    var wi = visible.filter(function(s) { return s.issues.length > 0; }).length;
-    var ut = visible.filter(function(s) { return s.owner === 'utility'; }).length;
-    var fi = visible.reduce(function(n, s) {
-      return n + s.issues.filter(function(i) { return i.tier === 'filed'; }).length;
-    }, 0);
-    document.getElementById('s-issues').textContent  = wi;
-    document.getElementById('s-utility').textContent = ut;
-    document.getElementById('s-filed').textContent   = fi;
-    document.getElementById('pin-count').textContent = visible.length + ' stations shown';
+    var wi=visible.filter(function(s){return s.issues.length>0;}).length;
+    var ut=visible.filter(function(s){return s.owner==='utility';}).length;
+    var fi=visible.reduce(function(n,s){return n+s.issues.filter(function(i){return i.tier==='filed';}).length;},0);
+    document.getElementById('s-stations').textContent = visible.length;
+    document.getElementById('s-issues').textContent   = wi;
+    document.getElementById('s-utility').textContent  = ut;
+    document.getElementById('s-filed').textContent    = fi;
+    document.getElementById('pin-count').textContent  = visible.length+' stations shown';
   }
 
   function applyFilters() {
-    var visible = [];
-    markerObjs.forEach(function(obj) {
-      var s = obj.station, has = s.issues.length > 0;
-      var mF = currentFilter === 'all' || s.issues.some(function(i) { return i.category === currentFilter; });
-      var mO = currentOwner === 'all' || s.owner === currentOwner;
-      var mC = has || showClean;
-      if (mF && mO && mC) {
-        if (!map.hasLayer(obj.marker)) obj.marker.addTo(map);
-        visible.push(s);
-      } else {
-        if (map.hasLayer(obj.marker)) map.removeLayer(obj.marker);
-      }
+    var visible=[];
+    markerObjs.forEach(function(obj){
+      var s=obj.station, has=s.issues.length>0;
+      var mF=currentFilter==='all'||s.issues.some(function(i){return i.category===currentFilter;});
+      var mO=currentOwner==='all'||s.owner===currentOwner;
+      var mC=has||showClean;
+      if(mF&&mO&&mC){if(!map.hasLayer(obj.marker))obj.marker.addTo(map);visible.push(s);}
+      else{if(map.hasLayer(obj.marker))map.removeLayer(obj.marker);}
     });
     updateStats(visible);
-    document.getElementById('detail-panel').style.display = 'none';
+    document.getElementById('detail-panel').style.display='none';
   }
 
-  document.querySelectorAll('.filter-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
-      this.classList.add('active');
-      currentFilter = this.getAttribute('data-filter');
-      applyFilters();
+  document.querySelectorAll('.filter-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
+      this.classList.add('active'); currentFilter=this.getAttribute('data-filter'); applyFilters();
     });
   });
-
-  document.querySelectorAll('.owner-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('.owner-btn').forEach(function(b) { b.classList.remove('active'); });
-      this.classList.add('active');
-      currentOwner = this.getAttribute('data-owner');
-      applyFilters();
+  document.querySelectorAll('.owner-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.owner-btn').forEach(function(b){b.classList.remove('active');});
+      this.classList.add('active'); currentOwner=this.getAttribute('data-owner'); applyFilters();
     });
   });
-
-  document.getElementById('toggle-clean').addEventListener('click', function() {
-    showClean = !showClean;
-    this.classList.toggle('active', showClean);
-    this.setAttribute('aria-pressed', showClean);
-    var dot = document.getElementById('toggle-dot');
-    dot.style.background  = showClean ? 'var(--blue)' : 'transparent';
-    dot.style.borderColor = showClean ? 'var(--blue)' : '#aaa';
+  document.getElementById('toggle-clean').addEventListener('click',function(){
+    showClean=!showClean;
+    this.classList.toggle('active',showClean);
+    this.setAttribute('aria-pressed',showClean);
+    var dot=document.getElementById('toggle-dot');
+    dot.style.background=showClean?'var(--blue)':'transparent';
+    dot.style.borderColor=showClean?'var(--blue)':'#aaa';
     applyFilters();
   });
 
   function buildMap(stations, issues) {
-    var issMap = {};
-    issues.forEach(function(iss) {
-      var s = iss.serial ? iss.serial.trim() : '';
-      if (!iss.visible_on_map || iss.visible_on_map.toUpperCase() !== 'TRUE') return;
-      if (!issMap[s]) issMap[s] = [];
+    var issMap={};
+    issues.forEach(function(iss){
+      var s=iss.serial.trim();
+      if(iss.visible_on_map!=='TRUE')return;
+      if(!issMap[s])issMap[s]=[];
       issMap[s].push(iss);
     });
-
-    allStations = stations.map(function(row) {
-      var ser = row.Serial ? row.Serial.trim() : '';
+    allStations=stations.map(function(row){
+      var ser=row.Serial.trim();
       return {
-        serial:     ser,
-        name:       row['Charging Location'] ? row['Charging Location'].trim() : '',
-        operator:   row.EV_Network ? row.EV_Network.trim() : '',
-        owner:      ownerType(row.EV_Network ? row.EV_Network.trim() : '', row['Charging Location'] ? row['Charging Location'].trim() : ''),
-        city:       row.City ? row.City.trim() : '',
-        address:    row['Street Address'] ? row['Street Address'].trim() : '',
-        lat:        parseFloat(row.Latitude_N),
-        lng:        parseFloat(row.Longitude_N),
-        kw:         row.kW ? row.kW.trim() : '',
-        connectors: row.DCFC ? row.DCFC.trim() : '',
-        plugshare:  row['PlugShare Link'] ? row['PlugShare Link'].trim() : '',
-        issues:     issMap[ser] || []
+        serial:ser, name:row['Charging Location'].trim(),
+        operator:row.EV_Network.trim(),
+        owner:ownerType(row.EV_Network.trim(),row['Charging Location'].trim()),
+        city:row.City.trim(), address:row['Street Address'].trim(),
+        lat:parseFloat(row.Latitude_N), lng:parseFloat(row.Longitude_N),
+        kw:row.kW.trim(), connectors:row.DCFC.trim(),
+        plugshare:row['PlugShare Link'].trim(),
+        issues:issMap[ser]||[]
       };
-    }).filter(function(s) { return !isNaN(s.lat) && !isNaN(s.lng); });
+    }).filter(function(s){return !isNaN(s.lat)&&!isNaN(s.lng);});
 
-    var totalConn = allStations.reduce(function(n, s) { return n + (parseInt(s.connectors) || 0); }, 0);
-    document.getElementById('s-connectors').textContent = totalConn.toLocaleString();
+    var totalConn=allStations.reduce(function(n,s){return n+(parseInt(s.connectors)||0);},0);
+    document.getElementById('s-connectors').textContent=totalConn.toLocaleString();
 
-    allStations.forEach(function(s) {
-      var mk = L.marker([s.lat, s.lng], { icon: makeIcon(s) });
-      mk.on('click', function() { showDetail(s); });
-      if (s.issues.length > 0) mk.addTo(map);
-      markerObjs.push({ marker: mk, station: s });
+    allStations.forEach(function(s){
+      var mk=L.marker([s.lat,s.lng],{icon:makeIcon(s)});
+      mk.on('click',function(){showDetail(s);});
+      if(s.issues.length>0)mk.addTo(map);
+      markerObjs.push({marker:mk,station:s});
     });
 
-    var issueStations = allStations.filter(function(s) { return s.issues.length > 0; });
+    var issueStations=allStations.filter(function(s){return s.issues.length>0;});
     updateStats(issueStations);
-    document.getElementById('pin-count').textContent = issueStations.length + ' stations shown';
-    document.getElementById('map-loading').style.display = 'none';
+    document.getElementById('map-loading').style.display='none';
 
     fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json')
-      .then(function(r) { return r.json(); })
-      .then(function(us) {
-        var states = topojson.feature(us, us.objects.states);
-        var md = states.features.filter(function(f) {
-          return f.properties && f.properties.name === 'Maryland';
-        })[0];
-        if (md) {
-          var mdL = L.geoJSON(md, { style: { color: '#2B4B8C', weight: 2, fill: false } }).addTo(map);
-          map.fitBounds(mdL.getBounds(), { padding: [16, 16], maxZoom: 8 });
-        } else {
-          map.setView([39.0, -76.7], 8);
-        }
-      })
-      .catch(function() { map.setView([39.0, -76.7], 8); });
+      .then(function(r){return r.json();})
+      .then(function(us){
+        var states=topojson.feature(us,us.objects.states);
+        var md=states.features.filter(function(f){return f.properties&&f.properties.name==='Maryland';})[0];
+        if(md){
+          var mdL=L.geoJSON(md,{style:{color:'#2B4B8C',weight:2,fill:false}}).addTo(map);
+          map.fitBounds(mdL.getBounds(),{padding:[16,16]});
+        } else { map.setView([39.0,-76.7],7); }
+      }).catch(function(){map.setView([39.0,-76.7],7);});
   }
 
-  function fetchCSV(url) {
-    var timeout = new Promise(function(_, reject) {
-      setTimeout(function() { reject(new Error('Request timed out')); }, 12000);
-    });
-    var request = fetch(url, { redirect: 'follow' })
-      .then(function(r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.text();
-      })
-      .then(parseCSV);
-    return Promise.race([request, timeout]);
+  function fetchCSV(url){
+    return fetch(url).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();}).then(parseCSV);
   }
 
-  Promise.all([fetchCSV(STATIONS_URL), fetchCSV(ISSUES_URL)])
-    .then(function(res) { buildMap(res[0], res[1]); })
-    .catch(function(err) {
-      var el = document.getElementById('map-loading');
-      el.innerHTML = 'Could not load station data. Please reload.';
+  Promise.all([fetchCSV(STATIONS_URL),fetchCSV(ISSUES_URL)])
+    .then(function(res){buildMap(res[0],res[1]);})
+    .catch(function(err){
+      console.error(err);
+      var el=document.getElementById('map-loading');
+      el.innerHTML='Could not load station data. Please reload.';
     });
-
 })();
 </script>
 </body>
