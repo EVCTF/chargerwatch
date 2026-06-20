@@ -756,13 +756,21 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
   });
 
   function buildMap(stations, issues) {
+    console.log('Stations loaded:', stations.length);
+    console.log('Issues loaded:', issues.length);
+    if (issues.length > 0) {
+      console.log('First issue row keys:', Object.keys(issues[0]));
+      console.log('First issue row values:', JSON.stringify(issues[0]));
+    }
     var issMap={};
     issues.forEach(function(iss){
-      var s=iss.serial.trim();
+      var s=iss.serial ? iss.serial.trim() : '';
+      console.log('Issue serial:', JSON.stringify(s), 'visible_on_map:', JSON.stringify(iss.visible_on_map));
       if(iss.visible_on_map!=='TRUE')return;
       if(!issMap[s])issMap[s]=[];
       issMap[s].push(iss);
     });
+    console.log('Issue map keys:', Object.keys(issMap));
     allStations=stations.map(function(row){
       var ser=row.Serial.trim();
       return {
