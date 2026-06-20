@@ -713,7 +713,6 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
     var wi=visible.filter(function(s){return s.issues.length>0;}).length;
     var ut=visible.filter(function(s){return s.owner==='utility';}).length;
     var fi=visible.reduce(function(n,s){return n+s.issues.filter(function(i){return i.tier==='filed';}).length;},0);
-    document.getElementById('s-stations').textContent = visible.length;
     document.getElementById('s-issues').textContent   = wi;
     document.getElementById('s-utility').textContent  = ut;
     document.getElementById('s-filed').textContent    = fi;
@@ -780,7 +779,6 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
 
     var totalConn=allStations.reduce(function(n,s){return n+(parseInt(s.connectors)||0);},0);
     document.getElementById('s-connectors').textContent=totalConn.toLocaleString();
-
     allStations.forEach(function(s){
       var mk=L.marker([s.lat,s.lng],{icon:makeIcon(s)});
       mk.on('click',function(){showDetail(s);});
