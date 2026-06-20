@@ -624,7 +624,7 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
       overlay.classList.add('hint');
       clearTimeout(hintTimer);
       hintTimer = setTimeout(function() { overlay.classList.remove('hint'); }, 1800);
-    }
+
   }, { passive: true });
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -637,7 +637,7 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
       var v = splitLine(l), o = {};
       hdrs.forEach(function(h,i){ o[h.trim()] = (v[i]||'').trim(); });
       return o;
-    });
+);
   }
   function splitLine(l) {
     var res=[], cur='', q=false;
@@ -646,7 +646,7 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
       if(c==='"'){q=!q;}
       else if(c===','&&!q){res.push(cur);cur='';}
       else{cur+=c;}
-    }
+
     res.push(cur); return res;
   }
   function ownerType(net, name) {
@@ -691,15 +691,15 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
           '<div class="issue-evidence">'+iss.evidence_summary+'</div>'+
           (iss.filing_reference?'<div class="issue-filing">'+iss.filing_reference+'</div>':'')+
           '</div>';
-      });
-    } else {
+  );
+ else {
       ih='<p style="font-size:12px;color:var(--ink-light);padding:6px 0;">No issues logged for this station yet.</p>';
-    }
+
     document.getElementById('d-issues').innerHTML = ih;
     var ah='';
     if(s.issues.length>0){
       ah+='<a href="#action" class="btn-action">'+actionLabel(s.issues[0].suggested_action)+' &rarr;</a>';
-    }
+
     ah+='<a href="'+s.plugshare+'" target="_blank" rel="noopener" class="btn-plugshare">PlugShare &#8599;</a>';
     document.getElementById('d-actions').innerHTML = ah;
     document.getElementById('detail-panel').style.display = 'block';
@@ -728,7 +728,7 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
       var mC=has||showClean;
       if(mF&&mO&&mC){if(!map.hasLayer(obj.marker))obj.marker.addTo(map);visible.push(s);}
       else{if(map.hasLayer(obj.marker))map.removeLayer(obj.marker);}
-    });
+);
     updateStats(visible);
     document.getElementById('detail-panel').style.display='none';
   }
@@ -737,13 +737,13 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
     btn.addEventListener('click',function(){
       document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
       this.classList.add('active'); currentFilter=this.getAttribute('data-filter'); applyFilters();
-    });
+);
   });
   document.querySelectorAll('.owner-btn').forEach(function(btn){
     btn.addEventListener('click',function(){
       document.querySelectorAll('.owner-btn').forEach(function(b){b.classList.remove('active');});
       this.classList.add('active'); currentOwner=this.getAttribute('data-owner'); applyFilters();
-    });
+);
   });
   document.getElementById('toggle-clean').addEventListener('click',function(){
     showClean=!showClean;
@@ -756,21 +756,21 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
   });
 
   function buildMap(stations, issues) {
-    console.log('Stations loaded:', stations.length);
-    console.log('Issues loaded:', issues.length);
-    if (issues.length > 0) {
-      console.log('First issue row keys:', Object.keys(issues[0]));
-      console.log('First issue row values:', JSON.stringify(issues[0]));
-    }
+
+
+
+
+
+
     var issMap={};
     issues.forEach(function(iss){
       var s=iss.serial ? iss.serial.trim() : '';
-      console.log('Issue serial:', JSON.stringify(s), 'visible_on_map:', JSON.stringify(iss.visible_on_map));
-      if(iss.visible_on_map!=='TRUE')return;
+
+      if(iss.visible_on_map.toUpperCase()!=='TRUE')return;
       if(!issMap[s])issMap[s]=[];
       issMap[s].push(iss);
-    });
-    console.log('Issue map keys:', Object.keys(issMap));
+);
+
     allStations=stations.map(function(row){
       var ser=row.Serial.trim();
       return {
@@ -782,8 +782,8 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
         kw:row.kW.trim(), connectors:row.DCFC.trim(),
         plugshare:row['PlugShare Link'].trim(),
         issues:issMap[ser]||[]
-      };
-    }).filter(function(s){return !isNaN(s.lat)&&!isNaN(s.lng);});
+  ;
+).filter(function(s){return !isNaN(s.lat)&&!isNaN(s.lng);});
 
     var totalConn=allStations.reduce(function(n,s){return n+(parseInt(s.connectors)||0);},0);
     document.getElementById('s-connectors').textContent=totalConn.toLocaleString();
@@ -792,7 +792,7 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
       mk.on('click',function(){showDetail(s);});
       if(s.issues.length>0)mk.addTo(map);
       markerObjs.push({marker:mk,station:s});
-    });
+);
 
     var issueStations=allStations.filter(function(s){return s.issues.length>0;});
     updateStats(issueStations);
@@ -806,21 +806,21 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
         if(md){
           var mdL=L.geoJSON(md,{style:{color:'#2B4B8C',weight:2,fill:false}}).addTo(map);
           map.fitBounds(mdL.getBounds(),{padding:[16,16], maxZoom: 8});
-        } else { map.setView([39.0,-76.7],8); }
-      }).catch(function(){map.setView([39.0,-76.7],8);});
+     else { map.setView([39.0,-76.7],8); }
+  ).catch(function(){map.setView([39.0,-76.7],8);});
   }
 
   function fetchCSV(url) {
     return fetch(url, { redirect: 'follow' })
       .then(function(r) {
-        console.log('Fetch response:', url, r.status, r.type, r.url);
+
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.text();
-      })
+  )
       .then(function(txt) {
-        console.log('CSV length:', txt.length, 'First 200 chars:', txt.substring(0,200));
+
         return parseCSV(txt);
-      });
+  );
   }
 
   Promise.all([fetchCSV(STATIONS_URL), fetchCSV(ISSUES_URL)])
@@ -829,7 +829,7 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
       console.error('Fetch failed:', err);
       var el = document.getElementById('map-loading');
       el.innerHTML = 'Could not load station data: ' + err.message + '. Check console for details.';
-    });
+);
 })();
 </script>
 </body>
