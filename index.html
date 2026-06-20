@@ -804,16 +804,25 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
       }).catch(function(){map.setView([39.0,-76.7],8);});
   }
 
-  function fetchCSV(url){
-    return fetch(url).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();}).then(parseCSV);
+  function fetchCSV(url) {
+    return fetch(url, { redirect: 'follow' })
+      .then(function(r) {
+        console.log('Fetch response:', url, r.status, r.type, r.url);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.text();
+      })
+      .then(function(txt) {
+        console.log('CSV length:', txt.length, 'First 200 chars:', txt.substring(0,200));
+        return parseCSV(txt);
+      });
   }
 
-  Promise.all([fetchCSV(STATIONS_URL),fetchCSV(ISSUES_URL)])
-    .then(function(res){buildMap(res[0],res[1]);})
-    .catch(function(err){
-      console.error(err);
-      var el=document.getElementById('map-loading');
-      el.innerHTML='Could not load station data. Please reload.';
+  Promise.all([fetchCSV(STATIONS_URL), fetchCSV(ISSUES_URL)])
+    .then(function(res) { buildMap(res[0], res[1]); })
+    .catch(function(err) {
+      console.error('Fetch failed:', err);
+      var el = document.getElementById('map-loading');
+      el.innerHTML = 'Could not load station data: ' + err.message + '. Check console for details.';
     });
 })();
 </script>
