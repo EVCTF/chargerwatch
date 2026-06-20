@@ -592,8 +592,9 @@ document.getElementById('nav-menu-btn').addEventListener('click', function() {
 
 // ── Map ──
 (function() {
-  var STATIONS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQfprmsFMyabyF0mCLV_hNMTHvieBoixLHO0eSo6oGF0F0vCX63iEmZ2XOBHhJeNOeme8bg8Ydg1ktX/pub?output=csv';
-  var ISSUES_URL   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQfprmsFMyabyF0mCLV_hNMTHvieBoixLHO0eSo6oGF0F0vCX63iEmZ2XOBHhJeNOeme8bg8Ydg1ktX/pub?gid=1236050046&single=true&output=csv';
+  var PROXY = 'https://script.google.com/macros/s/AKfycbzgYj6xUw2sY44enxDZlJdZMmmhKFWaQB4kwQXheaJGvNTux20XFa7B0Bt3WLAF2wA/exec';
+  var STATIONS_URL = PROXY + '?sheet=stations';
+  var ISSUES_URL   = PROXY + '?sheet=issues';
 
   var COLORS = { reliability: '#993C1D', weights_measures: '#854F0B', tax: '#0F6E56' };
   var CLEAN  = '#888';
