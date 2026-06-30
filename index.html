@@ -2,589 +2,386 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ChargerWatch.org &mdash; Maryland EV Charging Accountability</title>
-<meta name="description" content="Tracking Maryland EV charging station reliability, weights and measures compliance, and tax collection. A project of the EV Charging Task Force and PlugInSites.org.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>ChargerWatch.org</title>
+<meta name="description" content="Tracking Maryland EV charging station reliability, billing accuracy, and tax compliance. A project of the EV Charging Task Force and PlugInSites.org.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="shortcut icon" href="favicon.svg">
-<link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <style>
-/* ── Reset & base ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg:        #F8F8F6;
-  --bg-alt:    #F0EDE6;
-  --bg-dark:   #141414;
-  --ink:       #141414;
-  --ink-mid:   #4A4A48;
-  --ink-light: #888884;
-  --rule:      #E0DDD6;
-  --blue:      #2B4B8C;
-  --blue-lt:   #E8EEF8;
+  --bg:        #F2F2F7;
+  --bg-card:   #FFFFFF;
+  --ink:       #1C1C1E;
+  --ink-mid:   #3A3A3C;
+  --ink-light: #8E8E93;
+  --rule:      #E5E5EA;
   --amber:     #C17D2A;
   --amber-lt:  #FDF4E7;
+  --blue:      #2B4B8C;
+  --blue-lt:   #E8EEF8;
   --red:       #993C1D;
-  --brown:     #854F0B;
   --green:     #0F6E56;
-  --radius:    6px;
-  --shadow:    0 2px 12px rgba(0,0,0,0.08);
+  --radius:    12px;
+  --radius-sm: 8px;
+  --shadow:    0 1px 3px rgba(0,0,0,0.08);
 }
-html { scroll-behavior: smooth; }
+html { background: var(--bg); }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
   background: var(--bg);
   color: var(--ink);
-  font-size: 16px;
-  line-height: 1.6;
+  min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 0 40px;
 }
-a { color: var(--blue); text-decoration: none; }
-a:hover { text-decoration: underline; }
-img { max-width: 100%; display: block; }
 
-/* ── Nav ── */
-#nav {
-  position: sticky; top: 0; z-index: 900;
-  background: var(--bg-dark);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 24px; height: 52px;
-  border-bottom: 1px solid #2a2a2a;
+/* ── Header ── */
+#site-header {
+  padding: 52px 20px 20px;
+  background: var(--bg);
 }
-#nav-logo {
-  font-size: 15px; font-weight: 600; letter-spacing: -0.2px;
-  color: #fff; text-decoration: none;
-}
-#nav-logo span { color: var(--amber); }
-#nav-links { display: flex; gap: 24px; list-style: none; }
-#nav-links a { font-size: 13px; color: #bbb; text-decoration: none; transition: color 0.15s; }
-#nav-links a:hover { color: #fff; }
-#nav-menu-btn { display: none; background: none; border: none; color: #bbb; font-size: 22px; cursor: pointer; line-height: 1; }
-
-/* ── Hero ── */
-#hero {
-  background: var(--bg-dark);
-  color: #fff;
-  text-align: center;
-  padding: 48px 24px 40px;
-  border-bottom: 3px solid var(--amber);
-}
-#hero h1 {
-  font-size: clamp(18px, 3vw, 30px);
+#site-name {
+  font-size: 28px;
   font-weight: 700;
-  line-height: 1.3;
-  letter-spacing: -0.3px;
-  max-width: 620px;
-  margin: 0 auto 10px;
-}
-#hero h1 em { color: var(--amber); font-style: normal; }
-#hero p {
-  font-size: 13px; color: #999; margin-bottom: 24px;
-}
-#hero p a { color: #bbb; text-decoration: underline; }
-.hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-.btn-primary {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: var(--blue); color: #fff;
-  font-size: 14px; font-weight: 500;
-  padding: 10px 20px; border-radius: var(--radius);
-  border: none; cursor: pointer; text-decoration: none;
-  transition: background 0.15s;
-}
-.btn-primary:hover { background: #1e3870; text-decoration: none; color: #fff; }
-.btn-secondary {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: transparent; color: #ddd;
-  font-size: 14px; font-weight: 500;
-  padding: 10px 20px; border-radius: var(--radius);
-  border: 1px solid #444; cursor: pointer; text-decoration: none;
-  transition: all 0.15s;
-}
-.btn-secondary:hover { border-color: #888; color: #fff; text-decoration: none; }
-
-/* ── Stats strip ── */
-#stats-strip {
-  background: var(--bg-alt);
-  border-bottom: 1px solid var(--rule);
-  display: flex; justify-content: center; flex-wrap: wrap;
-  gap: 0;
-}
-.stat-item {
-  padding: 14px 28px;
-  text-align: center;
-  border-right: 1px solid var(--rule);
-  min-width: 120px;
-}
-.stat-item:last-child { border-right: none; }
-.stat-num {
-  font-size: 22px; font-weight: 700; color: var(--ink); line-height: 1.1;
-  display: block;
-}
-.stat-num.amber { color: var(--amber); }
-.stat-label { font-size: 11px; color: var(--ink-light); text-transform: uppercase; letter-spacing: 0.06em; }
-
-/* ── Section scaffold ── */
-.section { padding: 40px 24px; max-width: 1100px; margin: 0 auto; }
-.section-eyebrow {
-  font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--ink-light);
-  margin-bottom: 12px;
-}
-.section-title {
-  font-size: clamp(18px, 2.5vw, 24px); font-weight: 700;
-  letter-spacing: -0.3px; margin-bottom: 8px;
-}
-.section-rule {
-  border: none; border-top: 1px solid var(--rule); margin: 0;
-}
-
-/* ── Map section ── */
-#map-section { padding: 0; background: #fff; border-bottom: 1px solid var(--rule); }
-#map-controls {
-  padding: 10px 16px;
-  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
-  background: #fff; border-bottom: 1px solid var(--rule);
-}
-.ctrl-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-light); }
-.ctrl-sep { width: 1px; height: 22px; background: var(--rule); margin: 0 2px; }
-.filter-btn, .owner-btn, .toggle-btn {
-  font-size: 12px; padding: 5px 11px;
-  border: 1px solid var(--rule); background: #fff;
-  border-radius: 4px; cursor: pointer; transition: all 0.15s;
+  letter-spacing: -0.5px;
   color: var(--ink);
+  line-height: 1.1;
 }
-.filter-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
-.owner-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
-.toggle-btn { display: flex; align-items: center; gap: 6px; }
-.toggle-btn.active { background: var(--blue-lt); color: var(--blue); border-color: var(--blue); }
-.toggle-dot { width: 9px; height: 9px; border-radius: 50%; border: 2px solid #aaa; background: transparent; transition: all 0.15s; flex-shrink: 0; }
-#pin-count { font-size: 12px; color: var(--ink-light); margin-left: auto; white-space: nowrap; }
-#map {
-  height: 60vh; min-height: 320px; max-height: 580px;
-  width: 100%; position: relative;
+#site-name span { color: var(--amber); }
+#site-tagline {
+  font-size: 13px;
+  color: var(--ink-light);
+  margin-top: 4px;
+  line-height: 1.4;
 }
-#map-loading {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-  z-index: 500; background: rgba(255,255,255,0.95);
-  border: 1px solid var(--rule); border-radius: 8px;
-  padding: 18px 24px; text-align: center; font-size: 13px; color: var(--ink-mid);
+
+/* ── Menu card ── */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  margin: 0 16px 12px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
 }
-.spinner {
-  width: 22px; height: 22px;
-  border: 2px solid var(--rule); border-top-color: var(--blue);
-  border-radius: 50%; animation: spin 0.8s linear infinite;
-  margin: 0 auto 8px;
+.menu-row {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--ink);
+  gap: 14px;
+  transition: background 0.1s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
-#map-legend {
-  position: absolute; bottom: 16px; left: 12px; z-index: 400;
-  background: rgba(255,255,255,0.96); border: 1px solid var(--rule);
-  border-radius: var(--radius); padding: 10px 13px; font-size: 11px;
+.menu-row:last-child { border-bottom: none; }
+.menu-row:active { background: var(--bg); }
+.menu-icon {
+  width: 32px; height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
 }
-#map-legend h5 { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-light); margin-bottom: 5px; }
-.leg-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; color: var(--ink-mid); line-height: 1.3; }
-.leg-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
-#detail-panel {
-  position: absolute; bottom: 16px; right: 12px; z-index: 400;
-  background: #fff; border: 1px solid var(--rule);
-  border-radius: var(--radius); box-shadow: var(--shadow);
-  padding: 14px 16px; width: 300px; max-height: 55vh; overflow-y: auto;
+.icon-submit  { background: #E8F4FD; }
+.icon-issues  { background: #FDECEA; }
+.icon-stats   { background: #E8F8F0; }
+.icon-map     { background: #FDF4E7; }
+.icon-more    { background: #F0F0F5; }
+.menu-label {
+  flex: 1;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+}
+.menu-chevron {
+  color: var(--ink-light);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* ── Inline expand panels ── */
+.expand-panel {
   display: none;
+  padding: 0 16px 16px;
+  animation: fadeIn 0.2s ease;
 }
-#detail-panel h3 { font-size: 14px; font-weight: 600; line-height: 1.4; padding-right: 22px; margin-bottom: 2px; }
-.detail-meta { font-size: 11px; color: var(--ink-light); margin-bottom: 10px; line-height: 1.5; }
-.issue-card {
-  background: var(--bg); border-radius: 4px; padding: 10px 11px;
-  margin-bottom: 8px; border-left: 3px solid var(--rule);
-}
-.issue-card.reliability { border-left-color: var(--red); }
-.issue-card.weights_measures { border-left-color: var(--brown); }
-.issue-card.tax { border-left-color: var(--green); }
-.issue-tier { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-light); margin-bottom: 3px; }
-.issue-headline { font-size: 12px; line-height: 1.5; color: var(--ink); margin-bottom: 3px; }
-.issue-evidence { font-size: 11px; color: var(--ink-light); line-height: 1.4; }
-.issue-filing { font-size: 11px; color: var(--ink-light); font-style: italic; margin-top: 3px; }
-.detail-actions { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.btn-action {
-  font-size: 12px; padding: 6px 12px;
-  background: var(--ink); color: #fff; border: none;
-  border-radius: 4px; cursor: pointer; text-decoration: none;
-  display: inline-block;
-}
-.btn-action:hover { background: #333; text-decoration: none; color: #fff; }
-.btn-plugshare { font-size: 12px; color: var(--blue); }
-#detail-close {
-  position: absolute; top: 10px; right: 10px;
-  background: none; border: none; color: var(--ink-light);
-  font-size: 16px; cursor: pointer; line-height: 1;
-}
+.expand-panel.open { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
-/* ── This month ── */
-#this-month { background: var(--bg-alt); border-bottom: 1px solid var(--rule); }
-.month-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 16px; }
-.month-card {
-  background: #fff; border: 1px solid var(--rule);
-  border-radius: var(--radius); padding: 14px 16px;
+/* ── Stats panel ── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
 }
-.month-card-num { font-size: 26px; font-weight: 700; color: var(--amber); line-height: 1; margin-bottom: 4px; }
-.month-card-label { font-size: 13px; color: var(--ink-mid); line-height: 1.4; }
+.stat-card {
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 14px 12px;
+  text-align: center;
+}
+.stat-card-num {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--amber);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-card-label {
+  font-size: 11px;
+  color: var(--ink-light);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.3;
+}
+.stat-note {
+  font-size: 12px;
+  color: var(--ink-light);
+  text-align: center;
+  padding: 4px 0 0;
+}
+#stats-loading { text-align: center; font-size: 13px; color: var(--ink-light); padding: 12px 0; }
 
-/* ── Explainer ── */
-#explainer { border-bottom: 1px solid var(--rule); }
-.explainer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px; }
-.explainer-card {
-  border-top: 3px solid var(--rule); padding-top: 14px;
+/* ── About panel ── */
+.about-text {
+  font-size: 14px;
+  color: var(--ink-mid);
+  line-height: 1.65;
+  margin-bottom: 10px;
 }
-.explainer-card.reliability { border-top-color: var(--red); }
-.explainer-card.wm { border-top-color: var(--brown); }
-.explainer-card.tax { border-top-color: var(--green); }
-.explainer-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
-.explainer-card p { font-size: 13px; color: var(--ink-mid); line-height: 1.6; }
-.explainer-card a { font-size: 12px; color: var(--blue); display: inline-block; margin-top: 8px; }
+.about-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.about-link {
+  font-size: 14px;
+  color: var(--blue);
+  text-decoration: none;
+  padding: 10px 14px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.about-link:active { opacity: 0.7; }
 
-/* ── Cases ── */
-#cases { border-bottom: 1px solid var(--rule); }
-.cases-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
-.case-card {
-  border: 1px solid var(--rule); border-radius: var(--radius);
-  padding: 16px 18px; background: #fff;
-  border-top: 3px solid var(--red);
+/* ── Section label ── */
+.section-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-light);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 16px 20px 8px;
 }
-.case-card.wm { border-top-color: var(--brown); }
-.case-tag {
-  font-size: 10px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.06em; color: var(--ink-light); margin-bottom: 6px;
-}
-.case-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; line-height: 1.35; }
-.case-card p { font-size: 13px; color: var(--ink-mid); line-height: 1.55; }
-.case-status {
-  display: inline-block; font-size: 11px; font-weight: 600;
-  padding: 3px 8px; border-radius: 3px;
-  background: var(--amber-lt); color: var(--amber);
-  margin-top: 10px;
-}
-
-/* ── Action ── */
-#action { border-bottom: 1px solid var(--rule); }
-.action-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-top: 16px; }
-.action-card {
-  border: 1px solid var(--rule); border-radius: var(--radius);
-  padding: 16px; background: #fff; text-align: center;
-}
-.action-icon { font-size: 24px; margin-bottom: 8px; }
-.action-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
-.action-card p { font-size: 12px; color: var(--ink-mid); line-height: 1.5; margin-bottom: 12px; }
-.btn-outline {
-  display: inline-block; font-size: 12px; font-weight: 500;
-  padding: 7px 14px; border-radius: 4px;
-  border: 1px solid var(--blue); color: var(--blue);
-  text-decoration: none; transition: all 0.15s;
-}
-.btn-outline:hover { background: var(--blue); color: #fff; text-decoration: none; }
 
 /* ── Footer ── */
-#footer {
-  background: var(--bg-dark); color: #888;
-  padding: 28px 24px; text-align: center;
-  font-size: 12px; line-height: 1.8;
+#site-footer {
+  text-align: center;
+  padding: 24px 20px 0;
+  font-size: 11px;
+  color: var(--ink-light);
+  line-height: 1.8;
 }
-#footer a { color: #aaa; }
-#footer a:hover { color: #fff; }
+#site-footer a { color: var(--ink-light); text-decoration: underline; }
 
-/* ── Mobile ── */
-@media (max-width: 680px) {
-  #nav-links { display: none; }
-  #nav-links.open {
-    display: flex; flex-direction: column; gap: 0;
-    position: absolute; top: 52px; left: 0; right: 0;
-    background: var(--bg-dark); border-bottom: 1px solid #2a2a2a;
-    padding: 12px 0; z-index: 1000;
-  }
-  #nav-links.open a { padding: 10px 24px; display: block; font-size: 15px; color: #ccc; }
-  #nav-menu-btn { display: block; }
-
-  #hero { padding: 32px 16px 28px; }
-  #hero h1 { font-size: 18px; line-height: 1.35; }
-
-  .stat-item { padding: 12px 16px; min-width: 90px; }
-  .stat-num { font-size: 18px; }
-
-  #map { height: 55vh; }
-  #map-controls { padding: 8px 12px; gap: 6px; }
-  .filter-btn, .owner-btn, .toggle-btn { font-size: 11px; padding: 4px 9px; }
-  .ctrl-sep { display: none; }
-  .ctrl-label { display: none; }
-  #pin-count { display: none; }
-
-  #detail-panel {
-    bottom: 0; right: 0; left: 0; width: 100%;
-    border-radius: var(--radius) var(--radius) 0 0;
-    max-height: 50vh;
-  }
-  #map-legend { display: none; }
-
-  .month-grid { grid-template-columns: 1fr; }
-  .explainer-grid { grid-template-columns: 1fr; }
-  .cases-grid { grid-template-columns: 1fr; }
-  .action-grid { grid-template-columns: 1fr; }
-
-  .section { padding: 28px 16px; }
-}
-@media (max-width: 900px) and (min-width: 681px) {
-  .explainer-grid { grid-template-columns: 1fr 1fr; }
-  .action-grid { grid-template-columns: 1fr 1fr; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .spinner { animation: none; }
-}
-#map-scroll-overlay {
-  position: absolute; inset: 0; z-index: 450;
-  display: flex; align-items: center; justify-content: center;
-  background: transparent; cursor: pointer;
-}
-#map-scroll-overlay span {
-  background: rgba(0,0,0,0.55); color: #fff;
-  font-size: 13px; padding: 8px 16px; border-radius: 20px;
-  pointer-events: none; opacity: 0;
-  transition: opacity 0.3s;
-}
-#map-scroll-overlay:hover span,
-#map-scroll-overlay.hint span { opacity: 1; }
-#map-scroll-overlay.dismissed { display: none; }
-
-/* ── Map preview (homepage static image) ── */
-#map-preview-link { display: block; text-decoration: none; }
-#map-preview {
-  position: relative;
-  height: 42vh; min-height: 224px; max-height: 406px;
-  overflow: hidden; cursor: pointer;
-  background: #e8e4dc;
-}
-#map-preview-img {
-  width: 100%; height: 100%;
-  object-fit: cover; object-position: center;
-  display: block;
-  transition: transform 0.3s ease;
-}
-#map-preview-link:hover #map-preview-img { transform: scale(1.02); }
-#map-preview-overlay {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(20,20,20,0.18);
-  transition: background 0.2s;
-}
-#map-preview-link:hover #map-preview-overlay { background: rgba(20,20,20,0.32); }
-#map-preview-cta {
-  background: rgba(20,20,20,0.75); color: #fff;
-  font-size: 15px; font-weight: 500;
-  padding: 12px 24px; border-radius: 24px;
-  letter-spacing: 0.01em;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-#map-preview-placeholder {
-  width: 100%; height: 100%;
-  display: flex; align-items: center; justify-content: center;
-  background: #e8e4dc; color: var(--ink-light);
-  font-size: 13px; flex-direction: column; gap: 8px;
+/* ── Desktop fallback ── */
+@media (min-width: 481px) {
+  body { padding-top: 20px; }
+  #site-header { padding-top: 32px; }
 }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav id="nav" role="navigation" aria-label="Main navigation">
-  <a href="/" id="nav-logo">Charger<span>Watch</span>.org</a>
-  <ul id="nav-links">
-    <li><a href="map.html">Map</a></li>
-    <li><a href="#cases">Cases</a></li>
-    <li><a href="#action">How to file</a></li>
-    <li><a href="#about">About</a></li>
-  </ul>
-  <button id="nav-menu-btn" aria-label="Open menu" aria-expanded="false">&#9776;</button>
-</nav>
-
-<!-- HERO -->
-<header id="hero" role="banner">
-  <h1>Maryland promised <em>reliable</em> EV charging that is properly billed and taxed. We track whether that promise is being kept.</h1>
-  <p>A project of the <a href="https://pluginsites.org" target="_blank" rel="noopener">EV Charging Task Force</a> and <a href="https://pluginsites.org" target="_blank" rel="noopener">PlugInSites.org</a></p>
-  <div class="hero-btns">
-    <a href="map.html" class="btn-primary">Explore the map</a>
-    <a href="#action" class="btn-secondary">Report a problem</a>
-  </div>
+<header id="site-header">
+  <div id="site-name">Charger<span>Watch</span>.org</div>
+  <div id="site-tagline">Maryland EV charging accountability</div>
 </header>
 
-<!-- STATS STRIP -->
-<div id="stats-strip" role="region" aria-label="Summary statistics">
-  <div class="stat-item">
-    <span class="stat-num" id="s-connectors">1,532</span>
-    <span class="stat-label">DCFC connectors</span>
+<div class="section-label">Menu</div>
+
+<div class="card" id="main-menu">
+
+  <!-- Submit -->
+  <a href="submit.html" class="menu-row" id="row-submit">
+    <span class="menu-icon icon-submit">📋</span>
+    <span class="menu-label">Submit</span>
+    <span class="menu-chevron">›</span>
+  </a>
+
+  <!-- Issues -->
+  <a href="issues.html" class="menu-row" id="row-issues">
+    <span class="menu-icon icon-issues">⚠️</span>
+    <span class="menu-label">Issues</span>
+    <span class="menu-chevron">›</span>
+  </a>
+
+  <!-- Stats (expands inline) -->
+  <div class="menu-row" id="row-stats" role="button" aria-expanded="false" tabindex="0">
+    <span class="menu-icon icon-stats">📊</span>
+    <span class="menu-label">Stats</span>
+    <span class="menu-chevron" id="stats-chevron">›</span>
   </div>
-  <div class="stat-item">
-    <span class="stat-num amber" id="s-issues">3</span>
-    <span class="stat-label">Stations with issues</span>
+
+  <!-- Map -->
+  <a href="map.html" class="menu-row" id="row-map">
+    <span class="menu-icon icon-map">🗺️</span>
+    <span class="menu-label">Map</span>
+    <span class="menu-chevron">›</span>
+  </a>
+
+  <!-- More (expands inline) -->
+  <div class="menu-row" id="row-more" role="button" aria-expanded="false" tabindex="0" style="border-bottom:none;">
+    <span class="menu-icon icon-more">•••</span>
+    <span class="menu-label">More&hellip;</span>
+    <span class="menu-chevron" id="more-chevron">›</span>
   </div>
-  <div class="stat-item">
-    <span class="stat-num amber" id="s-filed">4</span>
-    <span class="stat-label">Filed &amp; verified issues</span>
-  </div>
-  <div class="stat-item">
-    <span class="stat-num" id="s-utility">80</span>
-    <span class="stat-label">Utility-owned stations</span>
+
+</div>
+
+<!-- Stats expand panel -->
+<div class="card" id="stats-panel" style="display:none;">
+  <div class="expand-panel open" id="stats-content">
+    <div id="stats-loading">Loading&hellip;</div>
+    <div id="stats-grid" style="display:none;">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-card-num" id="stat-sites">—</div>
+          <div class="stat-card-label">Public DCFC Sites</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-num" id="stat-ports">—</div>
+          <div class="stat-card-label">Public DCFC Ports</div>
+        </div>
+      </div>
+      <div class="stat-note" id="stat-new"></div>
+    </div>
   </div>
 </div>
 
-<!-- MAP -->
-<section id="map-section" aria-label="Accountability map">
-  <a href="map.html" id="map-preview-link" aria-label="Open the interactive accountability map">
-    <div id="map-preview">
-      <img src="map-preview.png" alt="Maryland DCFC station map preview showing all tracked charging stations" id="map-preview-img" />
-      <div id="map-preview-overlay">
-        <span id="map-preview-cta">&#9654; Open interactive map</span>
-      </div>
-    </div>
-  </a>
-</section>
-<hr class="section-rule">
-
-<!-- THIS MONTH -->
-<section id="this-month" aria-labelledby="month-heading">
-  <div class="section">
-    <p class="section-eyebrow">Section 2 &middot; What we found this month</p>
-    <h2 class="section-title" id="month-heading">June 2026</h2>
-    <div class="month-grid">
-      <div class="month-card">
-        <div class="month-card-num">3</div>
-        <div class="month-card-label">Stations under formal PSC review in Case No. 9478</div>
-      </div>
-      <div class="month-card">
-        <div class="month-card-num">10+</div>
-        <div class="month-card-label">Weeks of total outage documented at Clinton Park and Ride</div>
-      </div>
-      <div class="month-card">
-        <div class="month-card-num">2</div>
-        <div class="month-card-label">Weights &amp; measures complaints validated by MDA inspectors</div>
-      </div>
+<!-- More expand panel -->
+<div class="card" id="more-panel" style="display:none;">
+  <div class="expand-panel open">
+    <p class="about-text">ChargerWatch.org is a project of the <strong>EV Charging Task Force (EVCTF)</strong>, a Maryland-based volunteer citizen watchdog group, published in partnership with <a href="https://pluginsites.org" style="color:var(--blue);">PlugInSites.org</a>.</p>
+    <p class="about-text">The EVCTF files public comments in Maryland PSC proceedings, testifies at bill hearings before Maryland General Assembly committees, and its members participate as citizens in the PSC EV Work Group. The EVCTF's founder has 14 years of EV driving experience and has been quoted in the Washington Post, Baltimore Sun, and Politico.</p>
+    <div class="about-links">
+      <a href="https://pluginsites.org" class="about-link" target="_blank" rel="noopener">PlugInSites.org <span>›</span></a>
+      <a href="mailto:info@chargerwatch.org" class="about-link">Contact us <span>›</span></a>
     </div>
   </div>
-</section>
-<hr class="section-rule">
+</div>
 
-<!-- EXPLAINER -->
-<section id="explainer" aria-labelledby="explainer-heading">
-  <div class="section">
-    <p class="section-eyebrow">Section 3 &middot; The three standards we track</p>
-    <h2 class="section-title" id="explainer-heading">What Maryland regulators are required to enforce</h2>
-    <div class="explainer-grid">
-      <div class="explainer-card reliability">
-        <h3>Reliability: the 97% uptime standard</h3>
-        <p>Maryland law (Public Utilities Article, &sect;&sect;&nbsp;7-901 through 7-905) requires investor-owned utility chargers to maintain 97% annual uptime, matching the federal NEVI standard. The PSC receives quarterly reports. As of this writing, no utility has faced a financial penalty for missing the target.</p>
-        <a href="#cases">See reliability cases &rarr;</a>
-      </div>
-      <div class="explainer-card wm">
-        <h3>Weights &amp; measures: accurate billing</h3>
-        <p>The Maryland Department of Agriculture's Weights and Measures Division regulates whether chargers are registered, labeled correctly, and bill accurately per kilowatt-hour. A charger can meet the uptime standard and still have a weights and measures problem. These are separate agencies with separate areas of responsibility.</p>
-        <a href="#cases">See weights &amp; measures cases &rarr;</a>
-      </div>
-      <div class="explainer-card tax">
-        <h3>Tax collection: EV drivers pay too</h3>
-        <p>Sales tax on EV charging sessions flows to Maryland's Transportation Trust Fund. The Comptroller of Maryland is responsible for ensuring that charging station operators collect state sales and use taxes and that the tax is disclosed to consumers on receipts.</p>
-        <a href="#action">Report a tax issue &rarr;</a>
-      </div>
-    </div>
-  </div>
-</section>
-<hr class="section-rule">
-
-<!-- CASES -->
-<section id="cases" aria-labelledby="cases-heading">
-  <div class="section">
-    <p class="section-eyebrow">Section 4 &middot; Featured case files</p>
-    <h2 class="section-title" id="cases-heading">Documented cases with formal filings</h2>
-    <div class="cases-grid">
-      <div class="case-card">
-        <div class="case-tag">Reliability &middot; BGE &middot; Anne Arundel County</div>
-        <h3>BWI Airport Cell Phone Lot: persistent derating and repeated outages. A complete site outage was documented on May 28, 2026.</h3>
-        
-        <span class="case-status">Under review &middot; PSC Case No. 9478</span>
-      </div>
-      <div class="case-card wm">
-        <div class="case-tag">Weights &amp; measures &middot; Pepco &middot; Prince George's County</div>
-        <h3>Bladensburg Town Hall DCFC: forensic evidence of repeated overbilling</h3>
-        <p>Forensic electrical analysis showed a roughly 5:1 discrepancy between kWh billed and kWh delivered. A separate anomaly allowed CHAdeMO connector activation via selecting CCS connector in the SWTCH app. Formal complaint filed with PSC.</p>
-        <span class="case-status">Under review &middot; PSC Case No. 9478</span>
-      </div>
-      <div class="case-card">
-        <div class="case-tag">Reliability &middot; Pepco &middot; Prince George's County</div>
-        <h3>Clinton Park and Ride: total failure exceeding ten weeks</h3>
-        <p>Analysis of PHI Quarterly Reliability Reports for DCFC sessions identified a sustained total outage at this station lasting over ten weeks, a distinct failure signature not consistent with routine maintenance.</p>
-        <span class="case-status">Open &middot; PSC Case No. 9478</span>
-      </div>
-      <div class="case-card wm">
-        <div class="case-tag">Weights &amp; measures &middot; ChargePoint &middot; Anne Arundel County</div>
-        <h3>Hotel at Arundel Preserve: undisclosed per-session fee</h3>
-        <p>A $0.25 per-session service fee was not reflected in the charging unit's displayed price at the time of the complaint. A weights and measures complaint was filed with MDA and is awaiting validation by an inspector.</p>
-        <span class="case-status">Pending &middot; MDA W&amp;M complaint</span>
-      </div>
-    </div>
-  </div>
-</section>
-<hr class="section-rule">
-
-<!-- ACTION -->
-<section id="action" aria-labelledby="action-heading">
-  <div class="section">
-    <p class="section-eyebrow">Section 5 &middot; Take action</p>
-    <h2 class="section-title" id="action-heading">How to make your voice count</h2>
-    <div class="action-grid">
-      <div class="action-card">
-        <div class="action-icon">&#9878;</div>
-        <h3>File a PSC comment</h3>
-        <p>Comment in PSC Case No. 9478 on utility EV charger reliability. Your experience as an EV driver is on-the-record evidence.</p>
-        <a href="https://www.psc.state.md.us" target="_blank" rel="noopener" class="btn-outline">Go to PSC e-filing &rarr;</a>
-      </div>
-      <div class="action-card">
-        <div class="action-icon">&#9878;</div>
-        <h3>File a W&amp;M complaint</h3>
-        <p>If a charger billed you incorrectly or didn't show the price before you plugged in, the Maryland Department of Agriculture Weights and Measures Division wants to know.</p>
-        <a href="https://mda.maryland.gov/weights_measures/Pages/consumer_complaint.aspx" target="_blank" rel="noopener" class="btn-outline">File with MDA &rarr;</a>
-      </div>
-      <div class="action-card">
-        <div class="action-icon">&#9993;</div>
-        <h3>Report a problem to us</h3>
-        <p>Saw something wrong at a Maryland DCFC station? Tell us. We review every report and add credible, evidence-backed tips to the map.</p>
-        <a href="https://forms.gle/placeholder" target="_blank" rel="noopener" class="btn-outline">Submit a tip &rarr;</a>
-      </div>
-    </div>
-  </div>
-</section>
-<hr class="section-rule">
-
-<!-- ABOUT -->
-<section id="about" aria-labelledby="about-heading">
-  <div class="section" style="max-width:720px;">
-    <p class="section-eyebrow">About this site</p>
-    <h2 class="section-title" id="about-heading">Who we are and how we work</h2>
-    <p style="color:var(--ink-mid);font-size:15px;line-height:1.75;margin-bottom:14px;">ChargerWatch.org is a project of the <strong>EV Charging Task Force (EVCTF)</strong>, a Maryland-based volunteer citizen watchdog group, published in partnership with <a href="https://pluginsites.org" target="_blank" rel="noopener">PlugInSites.org</a>. The EVCTF files public comments in Maryland PSC proceedings, testifies at bill hearings before Maryland General Assembly committees, and its members participate as citizens in the PSC EV Work Group.</p>
-    <p style="color:var(--ink-mid);font-size:15px;line-height:1.75;margin-bottom:14px;">Every station on the map is drawn from a verified inventory of Maryland DC fast chargers. Issues are classified by evidence tier: filed and verified (formal PSC, MDA, or AG filing), documented pattern (data-backed but not yet formally filed), or reported and unverified (community tip with supporting evidence, pending review). We show our work and we say what we don't know.</p>
-    <p style="color:var(--ink-mid);font-size:15px;line-height:1.75;">The EVCTF's founder has 14 years of EV driving experience and has been quoted in the Washington Post, Baltimore Sun, and Politico.</p>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer id="footer" role="contentinfo">
-  <p>ChargerWatch.org &middot; A project of the <a href="https://pluginsites.org">EV Charging Task Force</a> and <a href="https://pluginsites.org">PlugInSites.org</a></p>
-  <p style="margin-top:4px;"><a href="#map-section">Map</a> &middot; <a href="#cases">Cases</a> &middot; <a href="#action">How to file</a> &middot; <a href="#about">About</a></p>
-  <p style="margin-top:8px;font-size:11px;color:#555;">Map tiles &copy; OpenStreetMap contributors. Boundary data &copy; US Census Bureau.</p>
+<footer id="site-footer">
+  <p>Map tiles &copy; OpenStreetMap contributors</p>
+  <p>Boundary data &copy; US Census Bureau</p>
 </footer>
 
-<!-- SCRIPTS -->
-
 <script>
-// ── Mobile nav toggle ──
-document.getElementById('nav-menu-btn').addEventListener('click', function() {
-  var links = document.getElementById('nav-links');
-  var open = links.classList.toggle('open');
-  this.setAttribute('aria-expanded', open);
+// ── Stats toggle ──
+var PROXY = 'https://script.google.com/macros/s/AKfycbwbiKT8mCWSwMVcgDdRqKm95lsovhNYhSCKPZ6Q03y5uMfKauOr9YLaqqxVJs6Xx3Q/exec';
+var statsLoaded = false;
+var statsOpen = false;
+var moreOpen = false;
+
+function toggleStats() {
+  statsOpen = !statsOpen;
+  var panel = document.getElementById('stats-panel');
+  var chevron = document.getElementById('stats-chevron');
+  var row = document.getElementById('row-stats');
+  panel.style.display = statsOpen ? 'block' : 'none';
+  chevron.style.transform = statsOpen ? 'rotate(90deg)' : '';
+  chevron.style.transition = 'transform 0.2s';
+  row.setAttribute('aria-expanded', statsOpen);
+  if (statsOpen && !statsLoaded) loadStats();
+}
+
+function toggleMore() {
+  moreOpen = !moreOpen;
+  var panel = document.getElementById('more-panel');
+  var chevron = document.getElementById('more-chevron');
+  var row = document.getElementById('row-more');
+  panel.style.display = moreOpen ? 'block' : 'none';
+  chevron.style.transform = moreOpen ? 'rotate(90deg)' : '';
+  chevron.style.transition = 'transform 0.2s';
+  row.setAttribute('aria-expanded', moreOpen);
+}
+
+document.getElementById('row-stats').addEventListener('click', toggleStats);
+document.getElementById('row-stats').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleStats(); }
 });
+document.getElementById('row-more').addEventListener('click', toggleMore);
+document.getElementById('row-more').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMore(); }
+});
+
+// ── Load stats from Google Sheets ──
+function parseCSV(txt) {
+  var lines = txt.trim().split('\n');
+  var hdrs = lines[0].split(',').map(function(h) { return h.trim().replace(/"/g,''); });
+  return lines.slice(1).map(function(l) {
+    var vals = [], cur = '', q = false;
+    for (var i = 0; i < l.length; i++) {
+      var c = l[i];
+      if (c === '"') { q = !q; }
+      else if (c === ',' && !q) { vals.push(cur.trim()); cur = ''; }
+      else { cur += c; }
+    }
+    vals.push(cur.trim());
+    var o = {};
+    hdrs.forEach(function(h, i) { o[h] = (vals[i] || '').replace(/"/g,''); });
+    return o;
+  });
+}
+
+function loadStats() {
+  fetch(PROXY + '?sheet=stations', { redirect: 'follow' })
+    .then(function(r) { return r.text(); })
+    .then(function(txt) {
+      var rows = parseCSV(txt);
+      var publicRows = rows.filter(function(r) {
+        return r.access_status && r.access_status.toLowerCase() === 'public';
+      });
+      var sites = publicRows.length;
+      var ports = publicRows.reduce(function(n, r) {
+        return n + (parseInt(r.DCFC) || 0);
+      }, 0);
+
+      // Newly opened in last 30 days
+      var now = new Date();
+      var newSites = publicRows.filter(function(r) {
+        if (!r.date_opened) return false;
+        var d = new Date(r.date_opened);
+        return !isNaN(d) && (now - d) <= 30 * 24 * 60 * 60 * 1000;
+      }).length;
+
+      document.getElementById('stat-sites').textContent = sites || '—';
+      document.getElementById('stat-ports').textContent = ports || '—';
+      if (newSites > 0) {
+        document.getElementById('stat-new').textContent =
+          newSites + ' new public site' + (newSites > 1 ? 's' : '') + ' opened in the last 30 days';
+      }
+      document.getElementById('stats-loading').style.display = 'none';
+      document.getElementById('stats-grid').style.display = 'block';
+      statsLoaded = true;
+    })
+    .catch(function() {
+      document.getElementById('stats-loading').textContent = 'Could not load stats. Please try again.';
+    });
+}
 </script>
 </body>
 </html>

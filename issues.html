@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Issues &mdash; ChargerWatch.org</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:       #F2F2F7;
+  --bg-card:  #FFFFFF;
+  --ink:      #1C1C1E;
+  --ink-mid:  #3A3A3C;
+  --ink-light:#8E8E93;
+  --rule:     #E5E5EA;
+  --amber:    #C17D2A;
+  --blue:     #2B4B8C;
+  --red:      #993C1D;
+  --brown:    #854F0B;
+  --green:    #0F6E56;
+  --radius:   12px;
+  --radius-sm:8px;
+  --shadow:   0 1px 3px rgba(0,0,0,0.08);
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 0 40px;
+}
+
+/* ── Nav ── */
+#nav {
+  display: flex; align-items: center; gap: 12px;
+  padding: 52px 16px 16px;
+  background: var(--bg);
+}
+#nav-back {
+  font-size: 17px; color: var(--blue);
+  text-decoration: none; display: flex; align-items: center; gap: 4px;
+}
+#nav-title { font-size: 17px; font-weight: 600; }
+
+/* ── Section label ── */
+.section-label {
+  font-size: 13px; font-weight: 600;
+  color: var(--ink-light);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 8px 20px 8px;
+}
+
+/* ── Case cards ── */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  margin: 0 16px 12px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.case-card {
+  padding: 16px;
+  border-left: 4px solid var(--rule);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.case-card.reliability { border-left-color: var(--red); }
+.case-card.weights_measures { border-left-color: var(--brown); }
+.case-card.tax { border-left-color: var(--green); }
+.case-tag {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--ink-light); margin-bottom: 4px;
+}
+.case-title {
+  font-size: 16px; font-weight: 600;
+  line-height: 1.35; margin-bottom: 6px;
+}
+.case-summary {
+  font-size: 14px; color: var(--ink-mid);
+  line-height: 1.55; margin-bottom: 10px;
+}
+.case-status {
+  display: inline-block;
+  font-size: 12px; font-weight: 600;
+  padding: 4px 10px; border-radius: 20px;
+  background: #FDF4E7; color: var(--amber);
+}
+.case-status.resolved {
+  background: #E8F8F0; color: var(--green);
+}
+
+/* ── Intro card ── */
+.intro-card {
+  padding: 14px 16px;
+  font-size: 14px; color: var(--ink-mid); line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a href="/" id="nav-back">&#8249; Back</a>
+  <span id="nav-title">Issues</span>
+</nav>
+
+<div class="card">
+  <div class="intro-card">
+    Documented cases with formal filings or data-backed evidence. Each case is classified by evidence tier and linked to underlying data.
+  </div>
+</div>
+
+<div class="section-label">Reliability</div>
+
+<div class="card">
+  <div class="case-card reliability">
+    <div class="case-tag">Reliability &middot; BGE &middot; Anne Arundel County</div>
+    <div class="case-title">BWI Airport Cell Phone Lot: persistent derating and repeated outages. A complete site outage was documented on May 28, 2026.</div>
+    <div class="case-summary">Statistical analysis of full-year 2025 session data showed near-continuous derating and repeated outages at this BGE-owned station.</div>
+    <span class="case-status">Under review &middot; PSC Case No. 9478</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="case-card reliability">
+    <div class="case-tag">Reliability &middot; Pepco &middot; Prince George's County</div>
+    <div class="case-title">Clinton Park and Ride: total failure exceeding ten weeks</div>
+    <div class="case-summary">Analysis of PHI Quarterly Reliability Reports for DCFC sessions identified a sustained total outage at this station lasting over ten weeks, a distinct failure signature not consistent with routine maintenance.</div>
+    <span class="case-status">Open &middot; PSC Case No. 9478</span>
+  </div>
+</div>
+
+<div class="section-label">Weights &amp; Measures</div>
+
+<div class="card">
+  <div class="case-card weights_measures">
+    <div class="case-tag">Weights &amp; Measures &middot; Pepco &middot; Prince George's County</div>
+    <div class="case-title">Bladensburg Town Hall DCFC: forensic evidence of repeated overbilling</div>
+    <div class="case-summary">Forensic electrical analysis showed a roughly 5:1 discrepancy between kWh billed and kWh delivered. A separate anomaly allowed CHAdeMO connector activation via selecting CCS connector in the SWTCH app. Formal complaint filed with PSC.</div>
+    <span class="case-status">Under review &middot; PSC Case No. 9478</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="case-card weights_measures">
+    <div class="case-tag">Weights &amp; Measures &middot; ChargePoint &middot; Anne Arundel County</div>
+    <div class="case-title">Hotel at Arundel Preserve: undisclosed per-session fee</div>
+    <div class="case-summary">A $0.25 per-session service fee was not reflected in the charging unit's displayed price at the time of the complaint. A weights and measures complaint was filed with MDA and is awaiting validation by an inspector.</div>
+    <span class="case-status">Pending &middot; MDA W&amp;M complaint</span>
+  </div>
+</div>
+
+<div class="section-label">Take Action</div>
+
+<div class="card">
+  <a href="https://www.psc.state.md.us" target="_blank" rel="noopener"
+     style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;text-decoration:none;color:var(--ink);border-bottom:1px solid var(--rule);">
+    <span style="font-size:16px;font-weight:500;">Comment in PSC Case 9478</span>
+    <span style="color:var(--ink-light);font-size:14px;">›</span>
+  </a>
+  <a href="https://mda.maryland.gov/weights_measures/Pages/consumer_complaint.aspx" target="_blank" rel="noopener"
+     style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;text-decoration:none;color:var(--ink);">
+    <span style="font-size:16px;font-weight:500;">File a W&amp;M complaint</span>
+    <span style="color:var(--ink-light);font-size:14px;">›</span>
+  </a>
+</div>
+
+</body>
+</html>
