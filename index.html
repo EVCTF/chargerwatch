@@ -275,12 +275,43 @@ body {
 <!-- More expand panel -->
 <div class="card" id="more-panel" style="display:none;">
   <div class="expand-panel open">
-    <p class="about-text">ChargerWatch.org is a project of the <strong>EV Charging Task Force (EVCTF)</strong>, a Maryland-based volunteer citizen watchdog group, published in partnership with <a href="https://pluginsites.org" style="color:var(--blue);">PlugInSites.org</a>.</p>
-    <p class="about-text">The EVCTF files public comments in Maryland PSC proceedings, testifies at bill hearings before Maryland General Assembly committees, and its members participate as citizens in the PSC EV Work Group. The EVCTF's founder has 14 years of EV driving experience and has been quoted in the Washington Post, Baltimore Sun, and Politico.</p>
     <div class="about-links">
       <a href="https://pluginsites.org" class="about-link" target="_blank" rel="noopener">PlugInSites.org <span>›</span></a>
       <a href="mailto:info@chargerwatch.org" class="about-link">Contact us <span>›</span></a>
     </div>
+  </div>
+</div>
+
+
+<div class="section-label">Our Mission</div>
+
+<div class="card">
+  <div style="padding: 16px;">
+    <p style="font-size: 16px; font-weight: 500; line-height: 1.55; color: var(--ink); letter-spacing: -0.2px;">Maryland promised reliable, accurately metered, fairly taxed EV charging. We track whether that promise is being kept.</p>
+  </div>
+</div>
+
+<div class="section-label">Maryland Public Fast Chargers</div>
+
+<div class="card">
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0;">
+    <div style="padding: 18px 16px; text-align: center; border-right: 1px solid var(--rule);">
+      <div style="font-size: 32px; font-weight: 700; color: var(--amber); line-height: 1; margin-bottom: 4px;" id="hero-sites">—</div>
+      <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-light);">Sites</div>
+    </div>
+    <div style="padding: 18px 16px; text-align: center;">
+      <div style="font-size: 32px; font-weight: 700; color: var(--amber); line-height: 1; margin-bottom: 4px;" id="hero-ports">—</div>
+      <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-light);">Ports</div>
+    </div>
+  </div>
+  <div style="padding: 10px 16px; border-top: 1px solid var(--rule); font-size: 11px; color: var(--ink-light); text-align: center;">Public DCFC sites tracked by ChargerWatch</div>
+</div>
+
+<div class="section-label">About</div>
+
+<div class="card">
+  <div style="padding: 16px;">
+    <p style="font-size: 14px; color: var(--ink-mid); line-height: 1.65;">ChargerWatch.org is a project of the <strong>EV Charging Task Force (EVCTF)</strong>, a Maryland-based volunteer citizen watchdog group, published in partnership with <a href="https://pluginsites.org" style="color: var(--blue);" target="_blank" rel="noopener">PlugInSites.org</a>.</p>
   </div>
 </div>
 
@@ -353,11 +384,11 @@ function loadStats() {
     .then(function(txt) {
       var rows = parseCSV(txt);
       var publicRows = rows.filter(function(r) {
-        return r.access_status && r.access_status.toLowerCase() === 'public';
+        return r.public && r.public.trim().toUpperCase() === 'PUBLIC';
       });
       var sites = publicRows.length;
       var ports = publicRows.reduce(function(n, r) {
-        return n + (parseInt(r.DCFC) || 0);
+        return n + (parseInt(r.dcfc) || 0);
       }, 0);
 
       // Newly opened in last 30 days
@@ -368,8 +399,10 @@ function loadStats() {
         return !isNaN(d) && (now - d) <= 30 * 24 * 60 * 60 * 1000;
       }).length;
 
-      document.getElementById('stat-sites').textContent = sites || '—';
-      document.getElementById('stat-ports').textContent = ports || '—';
+      document.getElementById('stat-sites').textContent = sites.toLocaleString() || '—';
+      if (document.getElementById('hero-sites')) document.getElementById('hero-sites').textContent = sites.toLocaleString();
+      if (document.getElementById('hero-ports')) document.getElementById('hero-ports').textContent = ports.toLocaleString();
+      document.getElementById('stat-ports').textContent = ports.toLocaleString() || '—';
       if (newSites > 0) {
         document.getElementById('stat-new').textContent =
           newSites + ' new public site' + (newSites > 1 ? 's' : '') + ' opened in the last 30 days';
