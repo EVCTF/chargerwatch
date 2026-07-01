@@ -94,6 +94,13 @@ body {
   display: flex; align-items: center; gap: 4px;
 }
 #network-toggle.open { color: var(--blue); border-color: var(--blue); background: var(--blue-lt); }
+.filter-btn {
+  font-size: 12px; padding: 5px 11px;
+  border: 1px solid var(--rule); background: var(--bg);
+  border-radius: 20px; cursor: pointer; color: var(--ink-mid);
+  -webkit-tap-highlight-color: transparent;
+}
+.filter-btn.active { background: var(--red); color: #fff; border-color: var(--red); }
 
 /* ── Map ── */
 #map-wrap { position: relative; flex: 1; overflow: hidden; }
@@ -201,6 +208,7 @@ body {
     <span class="ctrl-label">Public DCFC</span>
     <span class="ctrl-sep"></span>
     <button id="network-toggle">Networks &#9660;</button>
+    <button id="issues-toggle" class="filter-btn">Issues</button>
     <span id="pin-count"></span>
   </div>
   <div id="network-wrap" role="group" aria-label="Filter by network"></div>
@@ -245,9 +253,13 @@ body {
 (function() {
   var PROXY = 'https://script.google.com/macros/s/AKfycbwbiKT8mCWSwMVcgDdRqKm95lsovhNYhSCKPZ6Q03y5uMfKauOr9YLaqqxVJs6Xx3Q/exec';
   var STATIONS_URL = PROXY + '?sheet=stations';
+  var ISSUES_URL   = PROXY + '?sheet=issues';
 
   var AMBER   = '#C17D2A';
   var activeNetworks = {}; // network name -> true (all on by default)
+  var issueMode = false;
+  var issueMarkers = [];
+  var ISSUE_COLOR = '#993C1D';
   var allStations = [], markerObjs = [];
 
   var map = L.map('map', {
@@ -306,6 +318,12 @@ body {
     return L.divIcon({ html: h, className: '', iconSize: [sz, sz], iconAnchor: [sz/2, sz/2] });
   }
 
+  function makeIssueIcon() {
+    var sz = 13;
+    var h = '<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:transparent;border:2.5px solid '+ISSUE_COLOR+';box-sizing:border-box;"></div>';
+    return L.divIcon({ html: h, className: '', iconSize: [sz, sz], iconAnchor: [sz/2, sz/2] });
+  }
+
   // ── Detail panel ──
   function showDetail(s) {
     document.getElementById('d-name').textContent = s.name;
@@ -320,6 +338,16 @@ body {
       ah += '<a href="' + s.plugshare + '" target="_blank" rel="noopener" class="btn-plugshare">View on PlugShare &#8599;</a>';
     }
     document.getElementById('d-actions').innerHTML = ah;
+    document.getElementById('detail-panel').style.display = 'block';
+  }
+
+  function showIssueDetail(issue) {
+    document.getElementById('d-name').textContent = issue.headline;
+    document.getElementById('d-meta').innerHTML =
+      '<strong>' + (issue.status || '') + '</strong>' +
+      (issue.filing_reference ? ' &middot; ' + issue.filing_reference : '');
+    document.getElementById('d-badge').innerHTML = '<span style="display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:#FDECEA;color:var(--red);">Issue</span>';
+    document.getElementById('d-actions').innerHTML = '';
     document.getElementById('detail-panel').style.display = 'block';
   }
 
@@ -361,6 +389,23 @@ body {
     this.innerHTML = 'Networks ' + (networkOpen ? '&#9650;' : '&#9660;');
   });
 
+  // Issues toggle
+  document.getElementById('issues-toggle').addEventListener('click', function() {
+    issueMode = !issueMode;
+    this.classList.toggle('active', issueMode);
+    if (issueMode) {
+      // Close network panel if open
+      networkOpen = false;
+      document.getElementById('network-wrap').classList.remove('open');
+      document.getElementById('network-toggle').classList.remove('open');
+      document.getElementById('network-toggle').innerHTML = 'Networks &#9660;';
+      showIssues();
+    } else {
+      showDCFC();
+    }
+    document.getElementById('detail-panel').style.display = 'none';
+  });
+
   // ── Build map ──
   function buildMap(stations) {
     // Network display name mapping (short labels for buttons)
@@ -371,10 +416,11 @@ body {
       'Blink Network':       'Blink',
       'ChargePoint Network': 'ChargePoint',
       'FORD_CHARGE':         'Ford',
-      'Non_Networked':       'Non Networked',
+      'Non_Networked':       'No Network',
       'RIVIAN_ADVENTURE':    'Rivian',
       'FCN':                 'Francis Energy',
-      'SHELL_RECHARGE':      'Shell Recharge'
+      'SHELL_RECHARGE':      'Shell Recharge',
+      'Mercedes-Benz':       'MB'
     };
 
     // Count ports per network from raw data (allStations not yet built at this point)
@@ -501,6 +547,42 @@ body {
       }).catch(function() { map.setView([39.0, -76.7], 8); });
   }
 
+  // ── Issue markers ──
+  function buildIssueMarkers(issues) {
+    // Clear any existing issue markers
+    issueMarkers.forEach(function(mk) { map.removeLayer(mk); });
+    issueMarkers = [];
+
+    var visible = issues.filter(function(iss) {
+      return iss.visible_on_map && iss.visible_on_map.toUpperCase() === 'TRUE';
+    });
+
+    visible.forEach(function(iss) {
+      var lat = parseFloat(iss.latitude);
+      var lng = parseFloat(iss.longitude);
+      if (isNaN(lat) || isNaN(lng)) return;
+      var mk = L.marker([lat, lng], { icon: makeIssueIcon() });
+      mk.on('click', function() { showIssueDetail(iss); });
+      issueMarkers.push(mk);
+    });
+  }
+
+  function showIssues() {
+    // Hide all DCFC markers
+    markerObjs.forEach(function(obj) { map.removeLayer(obj.marker); });
+    // Show issue markers
+    issueMarkers.forEach(function(mk) { mk.addTo(map); });
+    document.getElementById('pin-count').textContent = issueMarkers.length + ' issues';
+    updateStats([]);
+  }
+
+  function showDCFC() {
+    // Hide issue markers
+    issueMarkers.forEach(function(mk) { map.removeLayer(mk); });
+    // Re-apply network filters to restore DCFC pins
+    applyFilters();
+  }
+
   // ── Fetch ──
   function fetchCSV(url) {
     var timeout = new Promise(function(_, reject) {
@@ -514,8 +596,11 @@ body {
     return Promise.race([request, timeout]);
   }
 
-  fetchCSV(STATIONS_URL)
-    .then(function(stations) { buildMap(stations); })
+  Promise.all([fetchCSV(STATIONS_URL), fetchCSV(ISSUES_URL)])
+    .then(function(results) {
+      buildMap(results[0]);
+      buildIssueMarkers(results[1]);
+    })
     .catch(function() {
       document.getElementById('map-loading').innerHTML = 'Could not load station data. Please reload.';
     });
