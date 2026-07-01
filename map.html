@@ -221,7 +221,7 @@ body {
   <div id="map-legend">
     <h5>ChargerWatch</h5>
     <div class="leg-row">
-      <span class="leg-dot" style="background:var(--amber);"></span>Public DCFC site
+      <span class="leg-dot" style="background:transparent;border:2px solid var(--amber);width:11px;height:11px;"></span>Public DCFC site
     </div>
   </div>
 
@@ -248,7 +248,6 @@ body {
   var STATIONS_URL = PROXY + '?sheet=stations';
 
   var AMBER   = '#C17D2A';
-  var PRIVATE_COLOR = '#C8A84B';
   var activeNetworks = {}; // network name -> true (all on by default)
   var allStations = [], markerObjs = [];
 
@@ -303,12 +302,8 @@ body {
 
   // ── Icon ──
   function makeIcon(s) {
-    var isPublic = s.access === 'PUBLIC';
-    var color  = isPublic ? AMBER : PRIVATE_COLOR;
-    var fill   = isPublic ? color : 'transparent';
-    var border = isPublic ? '2.5px solid ' + color : '2px solid ' + color;
-    var sz     = isPublic ? 13 : 11;
-    var h = '<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+fill+';border:'+border+';box-sizing:border-box;"></div>';
+    var sz  = 11;
+    var h = '<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:transparent;border:2px solid '+AMBER+';box-sizing:border-box;"></div>';
     return L.divIcon({ html: h, className: '', iconSize: [sz, sz], iconAnchor: [sz/2, sz/2] });
   }
 

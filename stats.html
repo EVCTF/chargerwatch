@@ -136,10 +136,10 @@ body {
     </div>
   </div>
 
-  <div class="section-label">Ports by Network</div>
+  <div class="section-label">DCFC Ports by Network</div>
   <div class="card" id="network-list"></div>
 
-  <div class="section-label">Ports by County</div>
+  <div class="section-label">DCFC Ports by County</div>
   <div class="card" id="county-list"></div>
 
 </div>
@@ -208,15 +208,40 @@ function loadStats() {
         return n + (parseInt(r.dcfc) || 0);
       }, 0);
 
+      // Network display name mapping
+      var networkNames = {
+        'Tesla':               'Tesla Supercharger',
+        'eVgo Network':        'eVgo',
+        'Blink Network':       'Blink',
+        'ChargePoint Network': 'ChargePoint',
+        'FORD_CHARGE':         'Ford Charge',
+        'Non_Networked':       'Non Networked',
+        'RIVIAN_ADVENTURE':    'Rivian Adventure Network',
+        'FCN':                 'Francis Energy',
+        'SHELL_RECHARGE':      'Shell Recharge'
+      };
+
       // Ports by network
       var byNetwork = {};
       publicRows.forEach(function(r) {
         var net = r.ev_network ? r.ev_network.trim() : 'Unknown';
         byNetwork[net] = (byNetwork[net] || 0) + (parseInt(r.dcfc) || 0);
       });
-      var networkData = Object.keys(byNetwork).map(function(k) {
-        return { name: k, ports: byNetwork[k] };
-      }).sort(function(a, b) { return b.ports - a.ports; });
+
+      // Group networks with fewer than 10 ports into Other
+      var networkData = [];
+      var otherPorts = 0;
+      Object.keys(byNetwork).forEach(function(k) {
+        if (byNetwork[k] < 10) {
+          otherPorts += byNetwork[k];
+        } else {
+          networkData.push({ name: networkNames[k] || k, ports: byNetwork[k] });
+        }
+      });
+      if (otherPorts > 0) {
+        networkData.push({ name: 'Other', ports: otherPorts });
+      }
+      networkData.sort(function(a, b) { return b.ports - a.ports; });
 
       // Ports by county
       var byCounty = {};
