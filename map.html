@@ -369,20 +369,53 @@ body {
 
   // ── Build map ──
   function buildMap(stations) {
-    // Collect unique networks
-    var networks = {};
-    stations.forEach(function(row) {
-      var n = row.ev_network ? row.ev_network.trim() : 'Unknown';
-      networks[n] = true;
-      activeNetworks[n] = true;
+    // Network display name mapping (short labels for buttons)
+    var networkLabels = {
+      'Tesla':               'Tesla',
+      'eVgo Network':        'eVgo',
+      'Blink Network':       'Blink',
+      'ChargePoint Network': 'ChargePoint',
+      'FORD_CHARGE':         'Ford',
+      'Non_Networked':       'Non Networked',
+      'RIVIAN_ADVENTURE':    'Rivian',
+      'FCN':                 'Francis Energy',
+      'SHELL_RECHARGE':      'Shell Recharge'
+    };
+
+    // Count ports per network to identify small ones
+    var networkPorts = {};
+    allStations.forEach(function(s) {
+      networkPorts[s.network] = (networkPorts[s.network] || 0) + (parseInt(s.connectors) || 0);
     });
+
+    // Separate main networks from small ones (< 10 ports)
+    var mainNetworks = {}, otherNetworks = [];
+    Object.keys(networkPorts).forEach(function(net) {
+      if (networkPorts[net] >= 10) {
+        mainNetworks[net] = true;
+      } else {
+        otherNetworks.push(net);
+      }
+    });
+
+    // All networks default to active
+    Object.keys(networkPorts).forEach(function(net) {
+      activeNetworks[net] = true;
+    });
+    var otherActive = true;
 
     // Build network toggle buttons
     var wrap = document.getElementById('network-wrap');
-    Object.keys(networks).sort().forEach(function(net) {
+
+    // Main network buttons sorted by port count descending
+    var mainSorted = Object.keys(mainNetworks).sort(function(a, b) {
+      return networkPorts[b] - networkPorts[a];
+    });
+
+    mainSorted.forEach(function(net) {
       var btn = document.createElement('button');
       btn.className = 'network-btn active';
-      btn.textContent = net;
+      btn.textContent = networkLabels[net] || net;
       btn.setAttribute('data-network', net);
       btn.addEventListener('click', function() {
         var n = this.getAttribute('data-network');
@@ -392,6 +425,20 @@ body {
       });
       wrap.appendChild(btn);
     });
+
+    // Other button (if any small networks exist)
+    if (otherNetworks.length > 0) {
+      var otherBtn = document.createElement('button');
+      otherBtn.className = 'network-btn active';
+      otherBtn.textContent = 'Other';
+      otherBtn.addEventListener('click', function() {
+        otherActive = !otherActive;
+        otherNetworks.forEach(function(net) { activeNetworks[net] = otherActive; });
+        otherBtn.classList.toggle('active', otherActive);
+        applyFilters();
+      });
+      wrap.appendChild(otherBtn);
+    }
 
     // Map stations
     allStations = stations.filter(function(row) {
