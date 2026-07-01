@@ -181,7 +181,7 @@ body {
 </nav>
 
 <div class="card">
-  <div class="intro-card">Cases being tracked by the EV Charging Task Force.</div>
+  <div class="intro-card">Active cases and issues being tracked.</div>
 </div>
 
 <div id="cases-wrap"></div>
@@ -352,11 +352,11 @@ function renderCases(issues) {
             (iss.headline        ? '<div class="case-headline">'  + iss.headline        + '</div>' : '') +
             (iss.evidence_summary? '<div class="case-summary">'   + iss.evidence_summary+ '</div>' : '') +
             (iss.filing_reference? '<div class="case-filing">'    + iss.filing_reference+ '</div>' : '') +
+            docsHtml +
             '<div class="case-status-row">' +
               '<span class="case-status ' + statusClass(iss.status) + '">' + statusLabel(iss.status) + '</span>' +
               (updatedTxt ? '<span class="case-updated">' + updatedTxt + '</span>' : '') +
             '</div>' +
-            docsHtml +
           '</div>' +
         '</div>';
     });
