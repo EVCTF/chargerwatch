@@ -159,7 +159,7 @@ body {
   display: none;
 }
 #detail-panel h3 { font-size: 14px; font-weight: 600; line-height: 1.4; padding-right: 24px; margin-bottom: 3px; }
-.detail-meta { font-size: 11px; color: var(--ink-light); margin-bottom: 10px; line-height: 1.5; }
+.detail-meta { font-size: 13px; color: var(--ink-light); margin-bottom: 10px; line-height: 1.5; }
 .detail-badge {
   display: inline-block; font-size: 11px; font-weight: 600;
   padding: 3px 10px; border-radius: 20px; margin-bottom: 10px;
@@ -173,7 +173,6 @@ body {
   border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block;
 }
 .btn-plugshare { font-size: 12px; color: var(--blue); text-decoration: none; }
-.btn-gmaps { font-size: 12px; color: var(--blue); text-decoration: none; margin-left: 4px; }
 #detail-close {
   position: absolute; top: 10px; right: 10px;
   background: none; border: none; color: var(--ink-light);
@@ -315,15 +314,10 @@ body {
       (s.kw ? ' &middot; ' + s.kw + ' kW' : '') +
       (s.connectors ? ' &middot; ' + s.connectors + ' port' + (s.connectors !== '1' ? 's' : '') : '') +
       (s.county ? ' &middot; ' + s.county + ' County' : '');
-    document.getElementById('d-badge').innerHTML =
-      '<span class="detail-badge ' + (s.access === 'PUBLIC' ? 'badge-public' : 'badge-private') + '">' +
-      (s.access === 'PUBLIC' ? 'Public DCFC' : 'Private / restricted') + '</span>';
+    document.getElementById('d-badge').innerHTML = '';
     var ah = '';
     if (s.plugshare) {
-      ah += '<a href="' + s.plugshare + '" target="_blank" rel="noopener" class="btn-plugshare">PlugShare &#8599;</a>';
-    }
-    if (s.gmaps) {
-      ah += '<a href="' + s.gmaps + '" target="_blank" rel="noopener" class="btn-gmaps">Maps &#8599;</a>';
+      ah += '<a href="' + s.plugshare + '" target="_blank" rel="noopener" class="btn-plugshare">View on PlugShare &#8599;</a>';
     }
     document.getElementById('d-actions').innerHTML = ah;
     document.getElementById('detail-panel').style.display = 'block';
@@ -369,19 +363,9 @@ body {
 
   // ── Build map ──
   function buildMap(stations) {
-    // Diagnostic: log first row keys and sample public value
-    if (stations.length > 0) {
-      console.log('Column headers:', Object.keys(stations[0]));
-      console.log('First row public value:', JSON.stringify(stations[0].public));
-      console.log('First row ev_network:', JSON.stringify(stations[0].ev_network));
-      console.log('Total rows:', stations.length);
-      var pubCount = stations.filter(function(r){ return r.public && r.public.trim().toUpperCase() === 'PUBLIC'; }).length;
-      console.log('PUBLIC rows found:', pubCount);
-    } else {
-      console.log('stations array is EMPTY');
-    }
     // Network display name mapping (short labels for buttons)
     var networkLabels = {
+      'Electrify America':   'Electrify Am',
       'Tesla':               'Tesla',
       'eVgo Network':        'eVgo',
       'Blink Network':       'Blink',
@@ -421,6 +405,23 @@ body {
 
     // Build network toggle buttons
     var wrap = document.getElementById('network-wrap');
+    var allNetActive = true;
+
+    // All button first
+    var allNetBtn = document.createElement('button');
+    allNetBtn.className = 'network-btn active';
+    allNetBtn.textContent = 'All';
+    allNetBtn.id = 'network-all-btn';
+    allNetBtn.addEventListener('click', function() {
+      allNetActive = !allNetActive;
+      Object.keys(networkPorts).forEach(function(net) { activeNetworks[net] = allNetActive; });
+      otherActive = allNetActive;
+      wrap.querySelectorAll('.network-btn').forEach(function(b) {
+        b.classList.toggle('active', allNetActive);
+      });
+      applyFilters();
+    });
+    wrap.appendChild(allNetBtn);
 
     // Main network buttons sorted by port count descending
     var mainSorted = Object.keys(mainNetworks).sort(function(a, b) {
@@ -471,7 +472,6 @@ body {
         kw:         row.kw ? row.kw.trim() : '',
         connectors: row.dcfc ? row.dcfc.trim() : '',
         plugshare:  row.plugshare_link ? row.plugshare_link.trim() : '',
-        gmaps:      row.google_maps_link ? row.google_maps_link.trim() : ''
       };
     }).filter(function(s) { return !isNaN(s.lat) && !isNaN(s.lng); });
 
