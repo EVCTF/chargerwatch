@@ -558,8 +558,8 @@ body {
     });
 
     visible.forEach(function(iss) {
-      var lat = parseFloat(iss.latitude);
-      var lng = parseFloat(iss.longitude);
+      var lat = parseFloat(iss.lat);
+      var lng = parseFloat(iss.lon);
       if (isNaN(lat) || isNaN(lng)) return;
       var mk = L.marker([lat, lng], { icon: makeIssueIcon() });
       mk.on('click', function() { showIssueDetail(iss); });
