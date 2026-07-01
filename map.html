@@ -369,6 +369,17 @@ body {
 
   // ── Build map ──
   function buildMap(stations) {
+    // Diagnostic: log first row keys and sample public value
+    if (stations.length > 0) {
+      console.log('Column headers:', Object.keys(stations[0]));
+      console.log('First row public value:', JSON.stringify(stations[0].public));
+      console.log('First row ev_network:', JSON.stringify(stations[0].ev_network));
+      console.log('Total rows:', stations.length);
+      var pubCount = stations.filter(function(r){ return r.public && r.public.trim().toUpperCase() === 'PUBLIC'; }).length;
+      console.log('PUBLIC rows found:', pubCount);
+    } else {
+      console.log('stations array is EMPTY');
+    }
     // Network display name mapping (short labels for buttons)
     var networkLabels = {
       'Tesla':               'Tesla',
@@ -382,10 +393,14 @@ body {
       'SHELL_RECHARGE':      'Shell Recharge'
     };
 
-    // Count ports per network to identify small ones
+    // Count ports per network from raw data (allStations not yet built at this point)
+    var publicRaw = stations.filter(function(row) {
+      return row.public && row.public.trim().toUpperCase() === 'PUBLIC';
+    });
     var networkPorts = {};
-    allStations.forEach(function(s) {
-      networkPorts[s.network] = (networkPorts[s.network] || 0) + (parseInt(s.connectors) || 0);
+    publicRaw.forEach(function(row) {
+      var net = row.ev_network ? row.ev_network.trim() : 'Unknown';
+      networkPorts[net] = (networkPorts[net] || 0) + (parseInt(row.dcfc) || 0);
     });
 
     // Separate main networks from small ones (< 10 ports)
