@@ -261,6 +261,17 @@ function categoryLabel(c) {
 
 function formatDate(d) {
   if (!d) return '';
+  // Handle full JS date string from Apps Script e.g. "Wed Dec 03 2025 19:00:00 GMT-0500..."
+  var jsDate = new Date(d);
+  if (!isNaN(jsDate.getTime())) {
+    var months = ['Jan','Feb','Mar','Apr','May','Jun',
+                  'Jul','Aug','Sep','Oct','Nov','Dec'];
+    var mo  = months[jsDate.getMonth()];
+    var day = ('0' + jsDate.getDate()).slice(-2);
+    var yr  = jsDate.getFullYear();
+    return mo + ' ' + day + ', ' + yr;
+  }
+  // Fallback: try splitting YYYY-MM-DD or MM/DD/YYYY
   var parts = d.split(/[-\/]/);
   if (parts.length < 3) return d;
   var months = ['Jan','Feb','Mar','Apr','May','Jun',
