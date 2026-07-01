@@ -43,7 +43,7 @@ body {
 
 /* ── Header ── */
 #site-header {
-  padding: 52px 20px 20px;
+  padding: 44px 20px 12px;
   background: var(--bg);
 }
 #site-name {
@@ -211,8 +211,6 @@ body {
   <div id="site-tagline">Maryland EV charging accountability</div>
 </header>
 
-<div class="section-label">Menu</div>
-
 <div class="card" id="main-menu">
 
   <!-- Submit -->
@@ -229,12 +227,12 @@ body {
     <span class="menu-chevron">›</span>
   </a>
 
-  <!-- Stats (expands inline) -->
-  <div class="menu-row" id="row-stats" role="button" aria-expanded="false" tabindex="0">
+  <!-- Stats -->
+  <a href="stats.html" class="menu-row" id="row-stats">
     <span class="menu-icon icon-stats">📊</span>
     <span class="menu-label">Stats</span>
-    <span class="menu-chevron" id="stats-chevron">›</span>
-  </div>
+    <span class="menu-chevron">›</span>
+  </a>
 
   <!-- Map -->
   <a href="map.html" class="menu-row" id="row-map">
@@ -252,25 +250,7 @@ body {
 
 </div>
 
-<!-- Stats expand panel -->
-<div class="card" id="stats-panel" style="display:none;">
-  <div class="expand-panel open" id="stats-content">
-    <div id="stats-loading">Loading&hellip;</div>
-    <div id="stats-grid" style="display:none;">
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-card-num" id="stat-sites">—</div>
-          <div class="stat-card-label">Public DCFC Sites</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-num" id="stat-ports">—</div>
-          <div class="stat-card-label">Public DCFC Ports</div>
-        </div>
-      </div>
-      <div class="stat-note" id="stat-new"></div>
-    </div>
-  </div>
-</div>
+
 
 <!-- More expand panel -->
 <div class="card" id="more-panel" style="display:none;">
@@ -283,12 +263,8 @@ body {
 </div>
 
 
-<div class="section-label">Our Mission</div>
-
-<div class="card">
-  <div style="padding: 16px;">
-    <p style="font-size: 16px; font-weight: 500; line-height: 1.55; color: var(--ink); letter-spacing: -0.2px;">Maryland promised reliable, accurately metered, fairly taxed EV charging. We track whether that promise is being kept.</p>
-  </div>
+<div style="background: var(--amber); margin: 0 16px 12px; border-radius: var(--radius); padding: 16px 18px;">
+  <p style="font-size: 16px; font-weight: 500; line-height: 1.6; color: #fff; letter-spacing: -0.1px;">Maryland promised reliable, accurately metered, fairly taxed EV charging. We track whether that promise is being kept.</p>
 </div>
 
 <div class="section-label">Maryland Public Fast Chargers</div>
@@ -296,11 +272,11 @@ body {
 <div class="card">
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0;">
     <div style="padding: 18px 16px; text-align: center; border-right: 1px solid var(--rule);">
-      <div style="font-size: 32px; font-weight: 700; color: var(--amber); line-height: 1; margin-bottom: 4px;" id="hero-sites">—</div>
+      <div style="font-size: 32px; font-weight: 700; color: var(--amber); line-height: 1; margin-bottom: 4px;">349</div>
       <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-light);">Sites</div>
     </div>
     <div style="padding: 18px 16px; text-align: center;">
-      <div style="font-size: 32px; font-weight: 700; color: var(--amber); line-height: 1; margin-bottom: 4px;" id="hero-ports">—</div>
+      <div style="font-size: 32px; font-weight: 700; color: var(--amber); line-height: 1; margin-bottom: 4px;">1,454</div>
       <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-light);">Ports</div>
     </div>
   </div>
@@ -321,23 +297,8 @@ body {
 </footer>
 
 <script>
-// ── Stats toggle ──
-var PROXY = 'https://script.google.com/macros/s/AKfycbwbiKT8mCWSwMVcgDdRqKm95lsovhNYhSCKPZ6Q03y5uMfKauOr9YLaqqxVJs6Xx3Q/exec';
-var statsLoaded = false;
-var statsOpen = false;
+// ── More toggle ──
 var moreOpen = false;
-
-function toggleStats() {
-  statsOpen = !statsOpen;
-  var panel = document.getElementById('stats-panel');
-  var chevron = document.getElementById('stats-chevron');
-  var row = document.getElementById('row-stats');
-  panel.style.display = statsOpen ? 'block' : 'none';
-  chevron.style.transform = statsOpen ? 'rotate(90deg)' : '';
-  chevron.style.transition = 'transform 0.2s';
-  row.setAttribute('aria-expanded', statsOpen);
-  if (statsOpen && !statsLoaded) loadStats();
-}
 
 function toggleMore() {
   moreOpen = !moreOpen;
@@ -350,71 +311,11 @@ function toggleMore() {
   row.setAttribute('aria-expanded', moreOpen);
 }
 
-document.getElementById('row-stats').addEventListener('click', toggleStats);
-document.getElementById('row-stats').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleStats(); }
-});
 document.getElementById('row-more').addEventListener('click', toggleMore);
 document.getElementById('row-more').addEventListener('keydown', function(e) {
   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMore(); }
 });
 
-// ── Load stats from Google Sheets ──
-function parseCSV(txt) {
-  var lines = txt.trim().split('\n');
-  var hdrs = lines[0].split(',').map(function(h) { return h.trim().replace(/"/g,''); });
-  return lines.slice(1).map(function(l) {
-    var vals = [], cur = '', q = false;
-    for (var i = 0; i < l.length; i++) {
-      var c = l[i];
-      if (c === '"') { q = !q; }
-      else if (c === ',' && !q) { vals.push(cur.trim()); cur = ''; }
-      else { cur += c; }
-    }
-    vals.push(cur.trim());
-    var o = {};
-    hdrs.forEach(function(h, i) { o[h] = (vals[i] || '').replace(/"/g,''); });
-    return o;
-  });
-}
-
-function loadStats() {
-  fetch(PROXY + '?sheet=stations', { redirect: 'follow' })
-    .then(function(r) { return r.text(); })
-    .then(function(txt) {
-      var rows = parseCSV(txt);
-      var publicRows = rows.filter(function(r) {
-        return r.public && r.public.trim().toUpperCase() === 'PUBLIC';
-      });
-      var sites = publicRows.length;
-      var ports = publicRows.reduce(function(n, r) {
-        return n + (parseInt(r.dcfc) || 0);
-      }, 0);
-
-      // Newly opened in last 30 days
-      var now = new Date();
-      var newSites = publicRows.filter(function(r) {
-        if (!r.date_opened) return false;
-        var d = new Date(r.date_opened);
-        return !isNaN(d) && (now - d) <= 30 * 24 * 60 * 60 * 1000;
-      }).length;
-
-      document.getElementById('stat-sites').textContent = sites.toLocaleString() || '—';
-      if (document.getElementById('hero-sites')) document.getElementById('hero-sites').textContent = sites.toLocaleString();
-      if (document.getElementById('hero-ports')) document.getElementById('hero-ports').textContent = ports.toLocaleString();
-      document.getElementById('stat-ports').textContent = ports.toLocaleString() || '—';
-      if (newSites > 0) {
-        document.getElementById('stat-new').textContent =
-          newSites + ' new public site' + (newSites > 1 ? 's' : '') + ' opened in the last 30 days';
-      }
-      document.getElementById('stats-loading').style.display = 'none';
-      document.getElementById('stats-grid').style.display = 'block';
-      statsLoaded = true;
-    })
-    .catch(function() {
-      document.getElementById('stats-loading').textContent = 'Could not load stats. Please try again.';
-    });
-}
 </script>
 </body>
 </html>

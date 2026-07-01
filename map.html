@@ -35,14 +35,15 @@ body {
 
 /* ── Nav ── */
 #nav {
-  background: var(--ink);
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--rule);
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 16px; height: 52px; flex-shrink: 0;
+  padding: 0 16px; height: 48px; flex-shrink: 0;
 }
-#nav-logo { font-size: 15px; font-weight: 700; color: #fff; text-decoration: none; letter-spacing: -0.3px; }
+#nav-logo { font-size: 13px; font-weight: 700; color: var(--ink); text-decoration: none; letter-spacing: -0.2px; }
 #nav-logo span { color: var(--amber); }
-#nav-back { font-size: 14px; color: #bbb; text-decoration: none; display: flex; align-items: center; gap: 4px; }
-#nav-back:hover { color: #fff; }
+#nav-back { font-size: 14px; color: var(--blue); text-decoration: none; display: flex; align-items: center; gap: 4px; }
+#nav-back:hover { opacity: 0.7; }
 
 /* ── Controls ── */
 #controls-wrap {
@@ -198,10 +199,7 @@ body {
 
 <div id="controls-wrap">
   <div id="controls-main">
-    <span class="ctrl-label">Show</span>
-    <button class="filter-btn active-all" data-filter="all">All</button>
-    <button class="filter-btn" data-filter="PUBLIC">Public</button>
-    <button class="filter-btn" data-filter="PRIVATE">Private</button>
+    <span class="ctrl-label">Public DCFC</span>
     <span class="ctrl-sep"></span>
     <button id="network-toggle">Networks &#9660;</button>
     <span id="pin-count"></span>
@@ -221,20 +219,15 @@ body {
   </div>
 
   <div id="map-legend">
-    <h5>Access</h5>
+    <h5>ChargerWatch</h5>
     <div class="leg-row">
-      <span class="leg-dot" style="background:var(--amber);"></span>Public DCFC
-    </div>
-    <div class="leg-row">
-      <span class="leg-dot" style="background:transparent;border:2px solid var(--private);width:11px;height:11px;"></span>Private / restricted
+      <span class="leg-dot" style="background:var(--amber);"></span>Public DCFC site
     </div>
   </div>
 
   <div id="stats-panel">
     <h5>Current view</h5>
-    <div class="stat-row"><span>Visible</span><span class="stat-num" id="stat-visible">-</span></div>
-    <div class="stat-row"><span>Public</span><span class="stat-num" id="stat-public">-</span></div>
-    <div class="stat-row"><span>Private</span><span class="stat-num" id="stat-private">-</span></div>
+    <div class="stat-row"><span>Sites</span><span class="stat-num" id="stat-visible">-</span></div>
     <div class="stat-row"><span>Ports</span><span class="stat-num" id="stat-ports">-</span></div>
   </div>
 
@@ -256,7 +249,6 @@ body {
 
   var AMBER   = '#C17D2A';
   var PRIVATE_COLOR = '#C8A84B';
-  var currentFilter  = 'all';
   var activeNetworks = {}; // network name -> true (all on by default)
   var allStations = [], markerObjs = [];
 
@@ -348,14 +340,10 @@ body {
 
   // ── Stats ──
   function updateStats(visible) {
-    var pub  = visible.filter(function(s) { return s.access === 'PUBLIC'; }).length;
-    var priv = visible.filter(function(s) { return s.access === 'PRIVATE'; }).length;
     var ports = visible.reduce(function(n, s) { return n + (parseInt(s.connectors) || 0); }, 0);
-    document.getElementById('stat-visible').textContent = visible.length;
-    document.getElementById('stat-public').textContent  = pub;
-    document.getElementById('stat-private').textContent = priv;
-    document.getElementById('stat-ports').textContent   = ports;
-    document.getElementById('pin-count').textContent    = visible.length + ' stations';
+    document.getElementById('stat-visible').textContent = visible.length.toLocaleString();
+    document.getElementById('stat-ports').textContent   = ports.toLocaleString();
+    document.getElementById('pin-count').textContent    = visible.length.toLocaleString() + ' public sites';
   }
 
   // ── Filters ──
@@ -363,9 +351,8 @@ body {
     var visible = [];
     markerObjs.forEach(function(obj) {
       var s = obj.station;
-      var matchFilter  = currentFilter === 'all' || s.access === currentFilter;
       var matchNetwork = activeNetworks[s.network] !== false;
-      if (matchFilter && matchNetwork) {
+      if (matchNetwork) {
         if (!map.hasLayer(obj.marker)) obj.marker.addTo(map);
         visible.push(s);
       } else {
@@ -375,19 +362,6 @@ body {
     updateStats(visible);
     document.getElementById('detail-panel').style.display = 'none';
   }
-
-  // Access filter buttons
-  document.querySelectorAll('.filter-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('.filter-btn').forEach(function(b) {
-        b.classList.remove('active-all', 'active-public', 'active-private');
-      });
-      var f = this.getAttribute('data-filter');
-      currentFilter = f;
-      this.classList.add(f === 'all' ? 'active-all' : f === 'PUBLIC' ? 'active-public' : 'active-private');
-      applyFilters();
-    });
-  });
 
   // Network toggle panel
   var networkOpen = false;
@@ -425,12 +399,14 @@ body {
     });
 
     // Map stations
-    allStations = stations.map(function(row) {
+    allStations = stations.filter(function(row) {
+      return row.public && row.public.trim().toUpperCase() === 'PUBLIC';
+    }).map(function(row) {
       return {
         serial:     row.serial ? row.serial.trim() : '',
         name:       row.charging_location ? row.charging_location.trim() : '',
         network:    row.ev_network ? row.ev_network.trim() : 'Unknown',
-        access:     row.public ? row.public.trim().toUpperCase() : 'PRIVATE',
+        access:     'PUBLIC',
         city:       row.city ? row.city.trim() : '',
         county:     row.county ? row.county.trim() : '',
         lat:        parseFloat(row.latitude_n),
