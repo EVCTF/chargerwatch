@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Open Cases &mdash; ChargerWatch.org</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:       #F2F2F7;
+  --bg-card:  #FFFFFF;
+  --ink:      #1C1C1E;
+  --ink-mid:  #3A3A3C;
+  --ink-light:#8E8E93;
+  --rule:     #E5E5EA;
+  --amber:    #C17D2A;
+  --amber-lt: #FDF4E7;
+  --blue:     #2B4B8C;
+  --red:      #993C1D;
+  --red-lt:   #FDECEA;
+  --brown:    #854F0B;
+  --brown-lt: #FDF0E0;
+  --green:    #0F6E56;
+  --green-lt: #E8F8F0;
+  --radius:   12px;
+  --radius-sm:8px;
+  --shadow:   0 1px 3px rgba(0,0,0,0.08);
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 0 40px;
+}
+
+/* ── Nav ── */
+#nav {
+  display: flex; align-items: center; gap: 12px;
+  padding: 52px 16px 16px;
+}
+#nav-back { font-size: 17px; color: var(--blue); text-decoration: none; }
+#nav-title { font-size: 17px; font-weight: 600; }
+
+/* ── Section label ── */
+.section-label {
+  font-size: 13px; font-weight: 600;
+  color: var(--ink-light);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 8px 20px 8px;
+}
+
+/* ── Cards ── */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  margin: 0 16px 12px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.intro-card {
+  padding: 14px 16px;
+  font-size: 14px; color: var(--ink-mid); line-height: 1.6;
+}
+
+/* ── Issue cards ── */
+.issue-card {
+  padding: 16px;
+  border-left: 4px solid var(--rule);
+}
+.issue-card.reliability     { border-left-color: var(--red); }
+.issue-card.weights_measures { border-left-color: var(--brown); }
+.issue-card.tax             { border-left-color: var(--green); }
+.issue-tag {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--ink-light); margin-bottom: 5px;
+}
+.issue-title {
+  font-size: 16px; font-weight: 600;
+  line-height: 1.35; margin-bottom: 7px; color: var(--ink);
+}
+.issue-summary {
+  font-size: 14px; color: var(--ink-mid);
+  line-height: 1.55; margin-bottom: 10px;
+}
+.issue-status {
+  display: inline-block;
+  font-size: 12px; font-weight: 600;
+  padding: 4px 10px; border-radius: 20px;
+}
+.status-open          { background: var(--amber-lt); color: var(--amber); }
+.status-under_review  { background: var(--amber-lt); color: var(--amber); }
+.status-resolved      { background: var(--green-lt); color: var(--green); }
+.status-pending       { background: var(--red-lt);   color: var(--red); }
+
+/* ── Loading / error ── */
+.loading-card {
+  padding: 32px 16px; text-align: center;
+  font-size: 14px; color: var(--ink-light);
+}
+.spinner {
+  width: 22px; height: 22px;
+  border: 2px solid var(--rule); border-top-color: var(--amber);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+  margin: 0 auto 10px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty-msg {
+  padding: 24px 16px; text-align: center;
+  font-size: 14px; color: var(--ink-light);
+}
+
+/* ── Take action ── */
+.action-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; text-decoration: none; color: var(--ink);
+  border-bottom: 1px solid var(--rule);
+  -webkit-tap-highlight-color: transparent;
+}
+.action-row:last-child { border-bottom: none; }
+.action-row:active { background: var(--bg); }
+.action-label { font-size: 16px; font-weight: 500; }
+.action-chevron { color: var(--ink-light); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a href="/" id="nav-back">&#8249; Back</a>
+  <span id="nav-title">Open Cases</span>
+</nav>
+
+<div class="card">
+  <div class="intro-card">Active cases being tracked and pursued by the EV Charging Task Force.</div>
+</div>
+
+<div id="issues-wrap"></div>
+
+<div class="section-label">Take Action</div>
+<div class="card">
+  <a href="https://www.psc.state.md.us" target="_blank" rel="noopener" class="action-row">
+    <span class="action-label">Comment in PSC Case 9478</span>
+    <span class="action-chevron">›</span>
+  </a>
+  <a href="https://mda.maryland.gov/weights_measures/Pages/EVSE_Registration.aspx" target="_blank" rel="noopener" class="action-row">
+    <span class="action-label">File a W&amp;M complaint</span>
+    <span class="action-chevron">›</span>
+  </a>
+</div>
+
+<script>
+var PROXY = 'https://script.google.com/macros/s/AKfycbwbiKT8mCWSwMVcgDdRqKm95lsovhNYhSCKPZ6Q03y5uMfKauOr9YLaqqxVJs6Xx3Q/exec';
+
+function parseCSV(txt) {
+  var lines = txt.trim().split('\n');
+  var hdrs = splitLine(lines[0]);
+  return lines.slice(1).map(function(l) {
+    var v = splitLine(l), o = {};
+    hdrs.forEach(function(h, i) { o[h.trim()] = (v[i] || '').trim(); });
+    return o;
+  });
+}
+function splitLine(l) {
+  var res = [], cur = '', q = false;
+  for (var i = 0; i < l.length; i++) {
+    var c = l[i];
+    if (c === '"') { q = !q; }
+    else if (c === ',' && !q) { res.push(cur); cur = ''; }
+    else { cur += c; }
+  }
+  res.push(cur); return res;
+}
+
+function statusClass(s) {
+  var m = { 'open': 'status-open', 'under review': 'status-under_review',
+            'resolved': 'status-resolved', 'pending': 'status-pending' };
+  return m[(s || '').toLowerCase()] || 'status-open';
+}
+
+function categoryClass(c) {
+  var m = { 'reliability': 'reliability', 'weights_measures': 'weights_measures',
+            'weights & measures': 'weights_measures', 'tax': 'tax' };
+  return m[(c || '').toLowerCase().replace(/ /g,'_')] || '';
+}
+
+function categoryLabel(c) {
+  var m = { 'reliability': 'Reliability', 'weights_measures': 'Weights & Measures',
+            'weights & measures': 'Weights & Measures', 'tax': 'Tax Collection' };
+  return m[(c || '').toLowerCase().replace(/ /g,'_')] || c;
+}
+
+function statusLabel(s) {
+  var m = { 'open': 'Open', 'under review': 'Under review',
+            'under_review': 'Under review', 'resolved': 'Resolved', 'pending': 'Pending' };
+  return m[(s || '').toLowerCase()] || s;
+}
+
+function renderIssues(issues) {
+  var visible = issues.filter(function(iss) {
+    return iss.visible_on_map && iss.visible_on_map.toUpperCase() === 'TRUE';
+  });
+
+  var wrap = document.getElementById('issues-wrap');
+
+  if (visible.length === 0) {
+    wrap.innerHTML = '<div class="card"><div class="empty-msg">No issues currently on record.</div></div>';
+    return;
+  }
+
+  // Group by category
+  var groups = {};
+  var order = [];
+  visible.forEach(function(iss) {
+    var cat = (iss.category || 'other').toLowerCase().replace(/ /g, '_');
+    if (!groups[cat]) { groups[cat] = []; order.push(cat); }
+    groups[cat].push(iss);
+  });
+
+  var html = '';
+  order.forEach(function(cat) {
+    html += '<div class="section-label">' + categoryLabel(cat) + '</div>';
+    groups[cat].forEach(function(iss) {
+      var tag = categoryLabel(cat);
+      if (iss.operator) tag += ' &middot; ' + iss.operator;
+      if (iss.site_name) tag += ' &middot; ' + iss.site_name;
+      var statusTxt = statusLabel(iss.status);
+      if (iss.filing_reference) statusTxt += ' &middot; ' + iss.filing_reference;
+      html +=
+        '<div class="card">' +
+          '<div class="issue-card ' + categoryClass(cat) + '">' +
+            '<div class="issue-tag">' + tag + '</div>' +
+            '<div class="issue-title">' + (iss.headline || '') + '</div>' +
+            '<div class="issue-summary">' + (iss.evidence_summary || '') + '</div>' +
+            '<span class="issue-status ' + statusClass(iss.status) + '">' + statusTxt + '</span>' +
+          '</div>' +
+        '</div>';
+    });
+  });
+
+  wrap.innerHTML = html;
+}
+
+// Show loading state
+document.getElementById('issues-wrap').innerHTML =
+  '<div class="card"><div class="loading-card"><div class="spinner"></div>Loading issues&hellip;</div></div>';
+
+fetch(PROXY + '?sheet=issues', { redirect: 'follow' })
+  .then(function(r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.text();
+  })
+  .then(function(txt) {
+    renderIssues(parseCSV(txt));
+  })
+  .catch(function() {
+    document.getElementById('issues-wrap').innerHTML =
+      '<div class="card"><div class="empty-msg">Could not load issues. Please try again.</div></div>';
+  });
+</script>
+</body>
+</html>
