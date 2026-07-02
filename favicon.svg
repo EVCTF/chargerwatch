@@ -1,4 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="5" fill="#141414"/>
-  <text x="16" y="23" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700" fill="#C17D2A" text-anchor="middle" letter-spacing="-0.5">CW</text>
+  <!-- Shield shape -->
+  <path d="M16 2 L28 7 L28 17 C28 23.5 22.5 29 16 30 C9.5 29 4 23.5 4 17 L4 7 Z" fill="#2551C0"/>
+  <!-- Lightning bolt -->
+  <path d="M19 6 L12 17 L16 17 L13 26 L21 14 L17 14 Z" fill="#F5C842"/>
 </svg>
