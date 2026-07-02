@@ -174,8 +174,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: 6px;
 }
 .about-link:active { opacity: 0.7; }
+.about-expandable { cursor: pointer; }
 
 /* ── Section label ── */
 .section-label {
@@ -208,7 +210,7 @@ body {
 
 <header id="site-header">
   <div id="site-name">Charger<span>Watch</span>.org</div>
-  <div id="site-tagline">Maryland EV charging accountability</div>
+  <div id="site-tagline">The receipts on Maryland's public charging</div>
 </header>
 
 <div class="card" id="main-menu">
@@ -216,14 +218,14 @@ body {
   <!-- Submit -->
   <a href="submit.html" class="menu-row" id="row-submit">
     <span class="menu-icon icon-submit">📋</span>
-    <span class="menu-label">Submit</span>
+    <span class="menu-label">Tell ChargerWatch</span>
     <span class="menu-chevron">›</span>
   </a>
 
   <!-- Issues -->
   <a href="cases.html" class="menu-row" id="row-issues">
     <span class="menu-icon icon-issues">⚖️</span>
-    <span class="menu-label">Cases</span>
+    <span class="menu-label">Active Cases</span>
     <span class="menu-chevron">›</span>
   </a>
 
@@ -256,16 +258,23 @@ body {
 <div class="card" id="more-panel" style="display:none;">
   <div class="expand-panel open">
     <div class="about-links">
+      <div class="about-link about-expandable" id="about-toggle" role="button" tabindex="0">
+        About <span id="about-chevron">›</span>
+      </div>
+      <div id="about-content" style="display:none; padding: 12px 0 4px; border-top: 1px solid var(--rule); margin-top: 4px;">
+        <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;margin-bottom:10px;">Maryland promised reliable, accurately metered, and fairly taxed public EV charging. We track whether that promise is being kept.</p>
+        <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;margin-bottom:10px;"><a href="https://chargerwatch.org" style="color:var(--blue);">ChargerWatch.org</a> delivers the receipts: independent, transparent data on charger reliability, metering accuracy, costs, and taxes&mdash;collected by Maryland EV drivers who actually use these stations every day.</p>
+        <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;">As a project of the EV Charging Task Force (EVCTF), a volunteer citizen advocacy group, and published in partnership with <a href="https://pluginsites.org" style="color:var(--blue);" target="_blank" rel="noopener">PlugInSites.org</a>, we compile real-world performance metrics, document compliance issues with Weights &amp; Measures standards, and highlight both successes and persistent problems across Maryland's growing network of public EV chargers.</p>
+      </div>
       <a href="methodology.html" class="about-link">Methodology <span>›</span></a>
-      <a href="https://pluginsites.org" class="about-link" target="_blank" rel="noopener">PlugInSites.org <span>›</span></a>
       <a href="mailto:lanny@pluginsites.org" class="about-link">Contact us <span>›</span></a>
     </div>
   </div>
 </div>
 
 
-<div style="background: var(--ink); margin: 0 16px 12px; border-radius: var(--radius); padding: 16px 18px;">
-  <p style="font-size: 16px; font-weight: 700; line-height: 1.6; color: #fff; letter-spacing: -0.1px;">Building trust in Maryland's public EV charging through independent data on reliability, pricing, and taxation.</p>
+<div style="background: var(--bg-card); border: 3px solid var(--ink); margin: 0 16px 12px; border-radius: var(--radius); padding: 16px 18px;">
+  <p style="font-size: 16px; font-weight: 700; line-height: 1.6; color: var(--ink); letter-spacing: -0.1px;">Independent data on reliability, costs, and taxes, collected by Maryland EV drivers.</p>
 </div>
 
 <div class="section-label">Maryland Public Fast Chargers</div>
@@ -288,7 +297,9 @@ body {
 
 <div class="card">
   <div style="padding: 16px;">
-    <p style="font-size: 14px; color: var(--ink-mid); line-height: 1.65;">ChargerWatch.org is a project of the <strong>EV Charging Task Force</strong>, a volunteer group of EV drivers, published in partnership with <a href="https://pluginsites.org" style="color: var(--blue);" target="_blank" rel="noopener">PlugInSites.org</a>.</p>
+    <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;margin-bottom:10px;">Maryland promised reliable, accurately metered, and fairly taxed public EV charging. We track whether that promise is being kept.</p>
+    <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;margin-bottom:10px;"><a href="https://chargerwatch.org" style="color:var(--blue);">ChargerWatch.org</a> delivers the receipts: independent, transparent data on charger reliability, metering accuracy, costs, and taxes&mdash;collected by Maryland EV drivers who actually use these stations every day.</p>
+    <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;">As a project of the EV Charging Task Force (EVCTF), a volunteer citizen advocacy group, and published in partnership with <a href="https://pluginsites.org" style="color:var(--blue);" target="_blank" rel="noopener">PlugInSites.org</a>, we compile real-world performance metrics, document compliance issues with Weights &amp; Measures standards, and highlight both successes and persistent problems across Maryland's growing network of public EV chargers.</p>
   </div>
 </div>
 
@@ -315,6 +326,18 @@ function toggleMore() {
 document.getElementById('row-more').addEventListener('click', toggleMore);
 document.getElementById('row-more').addEventListener('keydown', function(e) {
   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMore(); }
+});
+
+// About sub-toggle
+var aboutOpen = false;
+document.getElementById('about-toggle').addEventListener('click', function() {
+  aboutOpen = !aboutOpen;
+  document.getElementById('about-content').style.display = aboutOpen ? 'block' : 'none';
+  document.getElementById('about-chevron').style.transform = aboutOpen ? 'rotate(90deg)' : '';
+  document.getElementById('about-chevron').style.transition = 'transform 0.2s';
+});
+document.getElementById('about-toggle').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
 });
 
 </script>
