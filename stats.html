@@ -8,18 +8,17 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg:       #F2F2F7;
-  --bg-card:  #FFFFFF;
-  --ink:      #1C1C1E;
-  --ink-mid:  #3A3A3C;
-  --ink-light:#8E8E93;
-  --rule:     #E5E5EA;
-  --amber:    #2551C0;
-  --amber-lt: #E8EEF8;
-  --blue:     #2B4B8C;
-  --radius:   12px;
-  --radius-sm:8px;
-  --shadow:   0 1px 3px rgba(0,0,0,0.08);
+  --bg:        #F2F2F7;
+  --bg-card:   #FFFFFF;
+  --ink:       #1C1C1E;
+  --ink-mid:   #3A3A3C;
+  --ink-light: #8E8E93;
+  --rule:      #E5E5EA;
+  --blue:      #2551C0;
+  --blue-lt:   #E8EEF8;
+  --radius:    12px;
+  --radius-sm: 8px;
+  --shadow:    0 1px 3px rgba(0,0,0,0.08);
 }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
@@ -37,6 +36,8 @@ body {
 }
 #nav-back { font-size: 17px; color: var(--blue); text-decoration: none; }
 #nav-title { font-size: 17px; font-weight: 600; }
+
+/* ── Summary ── */
 .section-label {
   font-size: 13px; font-weight: 600;
   color: var(--ink-light);
@@ -50,60 +51,45 @@ body {
   box-shadow: var(--shadow);
   overflow: hidden;
 }
-
-/* ── Summary cards ── */
-.summary-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 0;
-}
-.summary-item {
-  padding: 18px 16px; text-align: center;
-}
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; }
+.summary-item { padding: 18px 16px; text-align: center; }
 .summary-item:first-child { border-right: 1px solid var(--rule); }
-.summary-num {
-  font-size: 34px; font-weight: 700;
-  color: var(--amber); line-height: 1; margin-bottom: 4px;
+.summary-num { font-size: 34px; font-weight: 700; color: var(--blue); line-height: 1; margin-bottom: 4px; }
+.summary-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-light); }
+
+/* ── Collapsible sections ── */
+.collapsible-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  border-bottom: 1px solid var(--rule);
 }
-.summary-label {
-  font-size: 11px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.06em;
-  color: var(--ink-light);
-}
+.collapsible-header:last-child { border-bottom: none; }
+.collapsible-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-light); }
+.collapsible-chevron { color: var(--ink-light); font-size: 16px; transition: transform 0.2s; }
+.collapsible-chevron.open { transform: rotate(90deg); }
+.collapsible-body { display: none; }
+.collapsible-body.open { display: block; }
 
 /* ── List rows ── */
 .list-row {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 16px; border-bottom: 1px solid var(--rule);
-  font-size: 15px;
+  padding: 11px 16px; border-bottom: 1px solid var(--rule);
+  font-size: 14px;
 }
 .list-row:last-child { border-bottom: none; }
 .list-name { color: var(--ink-mid); flex: 1; padding-right: 12px; }
-.list-count {
-  font-weight: 600; color: var(--ink);
-  font-size: 15px; white-space: nowrap;
-}
-.list-bar-wrap {
-  height: 4px; background: var(--rule);
-  border-radius: 2px; margin-top: 4px; overflow: hidden;
-}
-.list-bar {
-  height: 100%; background: var(--amber);
-  border-radius: 2px; transition: width 0.4s ease;
-}
+.list-count { font-weight: 600; color: var(--ink); white-space: nowrap; }
+.list-bar-wrap { height: 3px; background: var(--rule); border-radius: 2px; margin-top: 3px; overflow: hidden; }
+.list-bar { height: 100%; background: var(--blue); border-radius: 2px; transition: width 0.4s ease; width: 0%; }
 .list-row-inner { flex: 1; padding-right: 12px; }
+.empty-row { padding: 14px 16px; font-size: 13px; color: var(--ink-light); text-align: center; }
 
 /* ── Loading ── */
-#loading-msg {
-  text-align: center; padding: 32px 16px;
-  font-size: 14px; color: var(--ink-light);
-}
-.spinner {
-  width: 22px; height: 22px;
-  border: 2px solid var(--rule); border-top-color: var(--amber);
-  border-radius: 50%; animation: spin 0.8s linear infinite;
-  margin: 0 auto 10px;
-}
+#loading-card { padding: 32px 16px; text-align: center; font-size: 14px; color: var(--ink-light); }
+.spinner { width: 22px; height: 22px; border: 2px solid var(--rule); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
 @keyframes spin { to { transform: rotate(360deg); } }
-.error-msg { text-align: center; padding: 24px; font-size: 14px; color: #c00; }
 </style>
 </head>
 <body>
@@ -113,11 +99,8 @@ body {
   <span id="nav-title">Stats</span>
 </nav>
 
-<div id="loading-card" class="card">
-  <div id="loading-msg">
-    <div class="spinner"></div>
-    Loading stats&hellip;
-  </div>
+<div id="loading-wrap" class="card">
+  <div id="loading-card"><div class="spinner"></div>Loading stats&hellip;</div>
 </div>
 
 <div id="stats-content" style="display:none;">
@@ -126,21 +109,70 @@ body {
   <div class="card">
     <div class="summary-grid">
       <div class="summary-item">
-        <div class="summary-num" id="total-sites">—</div>
+        <div class="summary-num" id="total-sites">-</div>
         <div class="summary-label">Sites</div>
       </div>
       <div class="summary-item">
-        <div class="summary-num" id="total-ports">—</div>
+        <div class="summary-num" id="total-ports">-</div>
         <div class="summary-label">Ports</div>
       </div>
     </div>
   </div>
 
-  <div class="section-label">DCFC Ports by Network</div>
-  <div class="card" id="network-list"></div>
+  <!-- DCFC Ports by Network -->
+  <div class="card">
+    <div class="collapsible-header" data-target="network-body">
+      <span class="collapsible-title">DCFC Ports by Network</span>
+      <span class="collapsible-chevron" id="network-chevron">›</span>
+    </div>
+    <div class="collapsible-body" id="network-body">
+      <div id="network-list"></div>
+    </div>
+  </div>
 
-  <div class="section-label">DCFC Ports by County</div>
-  <div class="card" id="county-list"></div>
+  <!-- DCFC Ports by County -->
+  <div class="card">
+    <div class="collapsible-header" data-target="county-body">
+      <span class="collapsible-title">DCFC Ports by County</span>
+      <span class="collapsible-chevron" id="county-chevron">›</span>
+    </div>
+    <div class="collapsible-body" id="county-body">
+      <div id="county-list"></div>
+    </div>
+  </div>
+
+  <!-- DCFC Ports Utility-Owned -->
+  <div class="card">
+    <div class="collapsible-header" data-target="utility-body">
+      <span class="collapsible-title">DCFC Ports Utility-Owned</span>
+      <span class="collapsible-chevron" id="utility-chevron">›</span>
+    </div>
+    <div class="collapsible-body" id="utility-body">
+      <div id="utility-list"></div>
+    </div>
+  </div>
+
+  <!-- DCFC Ports by kW Output -->
+  <div class="card">
+    <div class="collapsible-header" data-target="kw-body">
+      <span class="collapsible-title">DCFC Ports by kW Output</span>
+      <span class="collapsible-chevron" id="kw-chevron">›</span>
+    </div>
+    <div class="collapsible-body" id="kw-body">
+      <div id="kw-list"></div>
+    </div>
+  </div>
+
+  <!-- DCFC Sites by Facility Type -->
+  <div class="card">
+    <div class="collapsible-header" data-target="facility-body">
+      <span class="collapsible-title">DCFC Sites by Facility Type</span>
+      <span class="collapsible-chevron" id="facility-chevron">›</span>
+    </div>
+    <div class="collapsible-body" id="facility-body">
+      <div id="facility-list"></div>
+    </div>
+  </div>
 
 </div>
 
@@ -167,22 +199,56 @@ function splitLine(l) {
   res.push(cur); return res;
 }
 
+// Network display names
+var networkNames = {
+  'Electrify America':   'Electrify Am.',
+  'Tesla':               'Tesla Supercharger',
+  'eVgo Network':        'eVgo',
+  'Blink Network':       'Blink',
+  'ChargePoint Network': 'ChargePoint',
+  'FORD_CHARGE':         'Ford Charge',
+  'Non_Networked':       'No Network',
+  'RIVIAN_ADVENTURE':    'Rivian Adventure',
+  'FCN':                 'Francis Energy',
+  'SHELL_RECHARGE':      'Shell Recharge',
+  'Mercedes-Benz':       'MB'
+};
+
+// Utility display names
+var utilityNames = {
+  'Utility-BGE':          'BGE',
+  'Utility-Pepco':        'Pepco',
+  'Utility-Delmarva':     'Delmarva Power',
+  'Utility-SMECO':        'SMECO',
+  'Utility-Potomac_Ed':   'Potomac Edison'
+};
+
+// Clean facility type label
+function facilityLabel(raw) {
+  if (!raw) return 'Unknown';
+  return raw.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+}
+
+// Build a sorted list with progress bars
 function buildList(containerId, data, maxVal) {
   var container = document.getElementById(containerId);
+  if (!data || data.length === 0) {
+    container.innerHTML = '<div class="empty-row">No data available.</div>';
+    return;
+  }
   container.innerHTML = '';
   data.forEach(function(item) {
-    var pct = maxVal > 0 ? Math.round((item.ports / maxVal) * 100) : 0;
+    var pct = maxVal > 0 ? Math.round((item.value / maxVal) * 100) : 0;
     var row = document.createElement('div');
     row.className = 'list-row';
     row.innerHTML =
       '<div class="list-row-inner">' +
         '<div class="list-name">' + item.name + '</div>' +
-        '<div class="list-bar-wrap"><div class="list-bar" style="width:0%" data-pct="' + pct + '"></div></div>' +
+        '<div class="list-bar-wrap"><div class="list-bar" data-pct="' + pct + '"></div></div>' +
       '</div>' +
-      '<div class="list-count">' + item.ports.toLocaleString() + '</div>';
+      '<div class="list-count">' + item.value.toLocaleString() + '</div>';
     container.appendChild(row);
   });
-  // Animate bars after render
   setTimeout(function() {
     container.querySelectorAll('.list-bar').forEach(function(bar) {
       bar.style.width = bar.getAttribute('data-pct') + '%';
@@ -190,84 +256,112 @@ function buildList(containerId, data, maxVal) {
   }, 50);
 }
 
+// Collapsible toggle
+document.querySelectorAll('.collapsible-header').forEach(function(header) {
+  header.addEventListener('click', function() {
+    var targetId = this.getAttribute('data-target');
+    var body = document.getElementById(targetId);
+    var chevronId = targetId.replace('-body', '-chevron');
+    var chevron = document.getElementById(chevronId);
+    var isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    if (chevron) chevron.classList.toggle('open', !isOpen);
+    // Animate bars when opening
+    if (!isOpen) {
+      setTimeout(function() {
+        body.querySelectorAll('.list-bar').forEach(function(bar) {
+          bar.style.width = bar.getAttribute('data-pct') + '%';
+        });
+      }, 50);
+    }
+  });
+});
+
 function loadStats() {
   fetch(PROXY + '?sheet=stations', { redirect: 'follow' })
-    .then(function(r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.text();
-    })
+    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
     .then(function(txt) {
       var rows = parseCSV(txt);
-      // Filter to PUBLIC only
-      var publicRows = rows.filter(function(r) {
+      var pub = rows.filter(function(r) {
         return r.public && r.public.trim().toUpperCase() === 'PUBLIC';
       });
 
-      var totalSites = publicRows.length;
-      var totalPorts = publicRows.reduce(function(n, r) {
-        return n + (parseInt(r.dcfc) || 0);
-      }, 0);
-
-      // Network display name mapping
-      var networkNames = {
-        'Tesla':               'Tesla Supercharger',
-        'eVgo Network':        'eVgo',
-        'Blink Network':       'Blink',
-        'ChargePoint Network': 'ChargePoint',
-        'FORD_CHARGE':         'Ford Charge',
-        'Non_Networked':       'Non Networked',
-        'RIVIAN_ADVENTURE':    'Rivian Adventure Network',
-        'FCN':                 'Francis Energy',
-        'SHELL_RECHARGE':      'Shell Recharge'
-      };
-
-      // Ports by network
-      var byNetwork = {};
-      publicRows.forEach(function(r) {
-        var net = r.ev_network ? r.ev_network.trim() : 'Unknown';
-        byNetwork[net] = (byNetwork[net] || 0) + (parseInt(r.dcfc) || 0);
-      });
-
-      // Group networks with fewer than 10 ports into Other
-      var networkData = [];
-      var otherPorts = 0;
-      Object.keys(byNetwork).forEach(function(k) {
-        if (byNetwork[k] < 10) {
-          otherPorts += byNetwork[k];
-        } else {
-          networkData.push({ name: networkNames[k] || k, ports: byNetwork[k] });
-        }
-      });
-      if (otherPorts > 0) {
-        networkData.push({ name: 'Other', ports: otherPorts });
-      }
-      networkData.sort(function(a, b) { return b.ports - a.ports; });
-
-      // Ports by county
-      var byCounty = {};
-      publicRows.forEach(function(r) {
-        var county = r.county ? r.county.trim() : 'Unknown';
-        byCounty[county] = (byCounty[county] || 0) + (parseInt(r.dcfc) || 0);
-      });
-      var countyData = Object.keys(byCounty).map(function(k) {
-        return { name: k + ' County', ports: byCounty[k] };
-      }).sort(function(a, b) { return b.ports - a.ports; });
-
-      // Render
+      // Summary
+      var totalSites = pub.length;
+      var totalPorts = pub.reduce(function(n, r) { return n + (parseInt(r.dcfc) || 0); }, 0);
       document.getElementById('total-sites').textContent = totalSites.toLocaleString();
       document.getElementById('total-ports').textContent = totalPorts.toLocaleString();
 
-      var maxNetwork = networkData.length > 0 ? networkData[0].ports : 1;
-      var maxCounty  = countyData.length  > 0 ? countyData[0].ports  : 1;
-      buildList('network-list', networkData, maxNetwork);
-      buildList('county-list',  countyData,  maxCounty);
+      // Ports by network (group <10 into Other)
+      var byNetwork = {};
+      pub.forEach(function(r) {
+        var net = r.ev_network ? r.ev_network.trim() : 'Unknown';
+        byNetwork[net] = (byNetwork[net] || 0) + (parseInt(r.dcfc) || 0);
+      });
+      var networkData = [], otherPorts = 0;
+      Object.keys(byNetwork).forEach(function(k) {
+        if (byNetwork[k] < 10) { otherPorts += byNetwork[k]; }
+        else { networkData.push({ name: networkNames[k] || k, value: byNetwork[k] }); }
+      });
+      if (otherPorts > 0) networkData.push({ name: 'Other', value: otherPorts });
+      networkData.sort(function(a, b) { return b.value - a.value; });
+      buildList('network-list', networkData, networkData.length ? networkData[0].value : 1);
 
-      document.getElementById('loading-card').style.display = 'none';
+      // Ports by county
+      var byCounty = {};
+      pub.forEach(function(r) {
+        var county = r.county ? r.county.trim() + ' County' : 'Unknown';
+        byCounty[county] = (byCounty[county] || 0) + (parseInt(r.dcfc) || 0);
+      });
+      var countyData = Object.keys(byCounty).map(function(k) {
+        return { name: k, value: byCounty[k] };
+      }).sort(function(a, b) { return b.value - a.value; });
+      buildList('county-list', countyData, countyData.length ? countyData[0].value : 1);
+
+      // Ports utility-owned
+      var utilityKeys = ['Utility-BGE','Utility-Pepco','Utility-Delmarva','Utility-SMECO','Utility-Potomac_Ed'];
+      var utilityData = [];
+      utilityKeys.forEach(function(key) {
+        var ports = pub.filter(function(r) {
+          return r.owner_type && r.owner_type.trim() === key;
+        }).reduce(function(n, r) { return n + (parseInt(r.dcfc) || 0); }, 0);
+        if (ports > 0) utilityData.push({ name: utilityNames[key] || key, value: ports });
+      });
+      utilityData.sort(function(a, b) { return b.value - a.value; });
+      buildList('utility-list', utilityData, utilityData.length ? utilityData[0].value : 1);
+
+      // Ports by kW band
+      var bands = [
+        { name: '0 - 50 kW',   min: 0,   max: 50  },
+        { name: '51 - 150 kW', min: 51,  max: 150 },
+        { name: '151 - 250 kW',min: 151, max: 250 },
+        { name: '251+ kW',     min: 251, max: Infinity }
+      ];
+      var kwData = bands.map(function(band) {
+        var ports = pub.filter(function(r) {
+          var kw = parseInt(r.kw);
+          return !isNaN(kw) && kw >= band.min && kw <= band.max;
+        }).reduce(function(n, r) { return n + (parseInt(r.dcfc) || 0); }, 0);
+        return { name: band.name, value: ports };
+      }).filter(function(d) { return d.value > 0; });
+      buildList('kw-list', kwData, kwData.length ? Math.max.apply(null, kwData.map(function(d){return d.value;})) : 1);
+
+      // Sites by facility type
+      var byFacility = {};
+      pub.forEach(function(r) {
+        var ft = r.facility_type ? r.facility_type.trim() : 'Unknown';
+        byFacility[ft] = (byFacility[ft] || 0) + 1;
+      });
+      var facilityData = Object.keys(byFacility).map(function(k) {
+        return { name: facilityLabel(k), value: byFacility[k] };
+      }).sort(function(a, b) { return b.value - a.value; });
+      buildList('facility-list', facilityData, facilityData.length ? facilityData[0].value : 1);
+
+      document.getElementById('loading-wrap').style.display = 'none';
       document.getElementById('stats-content').style.display = 'block';
     })
-    .catch(function(err) {
-      document.getElementById('loading-msg').innerHTML =
-        '<div class="error-msg">Could not load stats. Please try again.</div>';
+    .catch(function() {
+      document.getElementById('loading-card').innerHTML = 'Could not load stats. Please try again.';
     });
 }
 
