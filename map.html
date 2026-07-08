@@ -64,7 +64,7 @@ body {
   display: none;
   position: absolute;
   top: 52px; right: 12px;
-  width: 220px;
+  width: 180px;
   background: var(--bg-card);
   border: 1px solid var(--rule);
   border-radius: var(--radius);
@@ -196,7 +196,7 @@ body {
     <span id="nav-title">Map</span>
   </div>
   <button id="network-btn" aria-expanded="false" aria-haspopup="true">
-    Networks <span id="network-chevron">▾</span>
+    Filters <span id="network-chevron">▾</span>
   </button>
 </div>
 
@@ -258,13 +258,13 @@ body {
 
   var networkLabels = {
     'Electrify America':   'Electrify Am.',
-    'Tesla':               'Tesla Supercharger',
+    'Tesla':               'Tesla',
     'eVgo Network':        'eVgo',
     'Blink Network':       'Blink',
     'ChargePoint Network': 'ChargePoint',
     'FORD_CHARGE':         'Ford Charge',
     'Non_Networked':       'No Network',
-    'RIVIAN_ADVENTURE':    'Rivian Adventure',
+    'RIVIAN_ADVENTURE':    'Rivian',
     'FCN':                 'Francis Energy',
     'SHELL_RECHARGE':      'Shell Recharge',
     'Mercedes-Benz':       'MB'
@@ -376,7 +376,10 @@ body {
     var visible = [];
     markerObjs.forEach(function(obj) {
       var s = obj.station;
-      var show = activeNetworks[s.network] !== false;
+      var show = activeNetworks[s.network] !== false
+        && stationMatchesKw(s)
+        && (includeDealerships || s.facility_type !== 'CAR_DEALER')
+        && (includeRestricted  || s.access !== 'PRIVATE');
       if (show) { if (!map.hasLayer(obj.marker)) obj.marker.addTo(map); visible.push(s); }
       else { if (map.hasLayer(obj.marker)) map.removeLayer(obj.marker); }
     });
@@ -425,26 +428,97 @@ body {
     if (allChk) allChk.classList.toggle('checked', allChecked);
   }
 
+  // Filter state
+  var activePlugs = { ccs: true, nacs: true, tesla_only: true, chademo: true };
+  var activeKw    = { k50: true, k51_149: true, k150_249: true, k250_349: true, k350plus: true };
+  var includeDealerships = true;
+  var includeRestricted  = false;
+
+  // Network proxy for plug type
+  var TESLA_ONLY_NETS = ['Tesla'];
+  var NACS_NETS       = ['Tesla']; // Tesla with MagicDock/NACS
+  var CCS_NETS        = ['Electrify America','ChargePoint Network','eVgo Network','Blink Network',
+                         'FORD_CHARGE','FCN','SHELL_RECHARGE','IONNA','BP Pulse','InCharge',
+                         'EV Connect','Mercedes-Benz','OpConnect','7CHARGE','Quick Charge',
+                         'ezVOLTz','ChargeLab','Nayax','JOLT','Red E'];
+  var CHADEMO_NETS    = ['Non_Networked']; // CHAdeMO mostly legacy/non-networked
+
+  function stationMatchesPlugs(s) {
+    var net = s.network;
+    var isTeslaOnly = TESLA_ONLY_NETS.indexOf(net) >= 0;
+    if (isTeslaOnly && activePlugs.tesla_only) return true;
+    if (!isTeslaOnly) {
+      if (activePlugs.ccs && CCS_NETS.indexOf(net) >= 0) return true;
+      if (activePlugs.nacs) return true; // NACS increasingly everywhere
+      if (activePlugs.chademo && CHADEMO_NETS.indexOf(net) >= 0) return true;
+      if (activePlugs.ccs || activePlugs.nacs || activePlugs.chademo) return true;
+    }
+    return false;
+  }
+
+  function stationMatchesKw(s) {
+    var kw = parseInt(s.kw);
+    if (isNaN(kw)) return true; // unknown kW always shows
+    if (activeKw.k50      && kw <= 50)              return true;
+    if (activeKw.k51_149  && kw >= 51  && kw <= 149) return true;
+    if (activeKw.k150_249 && kw >= 150 && kw <= 249) return true;
+    if (activeKw.k250_349 && kw >= 250 && kw <= 349) return true;
+    if (activeKw.k350plus && kw >= 350)              return true;
+    return false;
+  }
+
+  function makeSection(label) {
+    var sec = document.createElement('div');
+    sec.style.cssText = 'padding:8px 14px 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#8E8E93;background:#F2F2F7;border-bottom:1px solid #E5E5EA;';
+    sec.textContent = label;
+    return sec;
+  }
+
+  function makeCheckRow(label, checked, onToggle, extraStyle) {
+    var row = document.createElement('div');
+    row.className = 'net-item' + (extraStyle ? '' : '');
+    if (extraStyle) row.style.cssText = extraStyle;
+    var chkEl = document.createElement('div');
+    chkEl.className = 'net-check' + (checked ? ' checked' : '');
+    var labelEl = document.createElement('span');
+    labelEl.className = 'net-label';
+    labelEl.textContent = label;
+    row.appendChild(chkEl);
+    row.appendChild(labelEl);
+    row.addEventListener('click', function() {
+      var isChecked = chkEl.classList.contains('checked');
+      onToggle(!isChecked, chkEl);
+    });
+    return row;
+  }
+
   function buildDropdown(networks) {
     dropdown.innerHTML = '';
 
-    // All row
+    // ── NETWORKS section ──
+    dropdown.appendChild(makeSection('Networks'));
+
+    // All Networks row
     var allRow = document.createElement('div');
     allRow.className = 'net-item all-row';
-    allRow.innerHTML = '<div class="net-check checked" data-network="__all__"></div><span class="net-label">All Networks</span>';
+    var allChk = document.createElement('div');
+    allChk.className = 'net-check checked';
+    allChk.setAttribute('data-network', '__all__');
+    var allLbl = document.createElement('span');
+    allLbl.className = 'net-label';
+    allLbl.textContent = 'All Networks';
+    allRow.appendChild(allChk);
+    allRow.appendChild(allLbl);
     allRow.addEventListener('click', function() {
-      allActive = !document.querySelector('.net-check[data-network="__all__"]').classList.contains('checked');
+      allActive = !allChk.classList.contains('checked');
       Object.keys(activeNetworks).forEach(function(n) { activeNetworks[n] = allActive; });
       applyFilters();
     });
     dropdown.appendChild(allRow);
 
-    // Individual networks sorted by port count
     var sorted = Object.keys(networks).sort(function(a, b) {
       return (networkPortCounts[b] || 0) - (networkPortCounts[a] || 0);
     });
-
-    // Separate small networks into Other
     var mainNets = [], otherNets = [];
     sorted.forEach(function(net) {
       if ((networkPortCounts[net] || 0) >= 10) mainNets.push(net);
@@ -453,14 +527,17 @@ body {
 
     mainNets.forEach(function(net) {
       var label = networkLabels[net] || net;
-      var count = networkPortCounts[net] || 0;
       var row = document.createElement('div');
       row.className = 'net-item';
-      row.innerHTML = '<div class="net-check checked" data-network="' + net + '"></div>' +
-                      '<span class="net-label">' + label + '</span>' +
-                      '<span class="net-count">' + count + '</span>';
+      var chk = document.createElement('div');
+      chk.className = 'net-check checked';
+      chk.setAttribute('data-network', net);
+      var lbl = document.createElement('span');
+      lbl.className = 'net-label';
+      lbl.textContent = label;
+      row.appendChild(chk);
+      row.appendChild(lbl);
       row.addEventListener('click', function() {
-        var chk = this.querySelector('.net-check');
         var isChecked = chk.classList.contains('checked');
         activeNetworks[net] = !isChecked;
         applyFilters();
@@ -468,24 +545,78 @@ body {
       dropdown.appendChild(row);
     });
 
-    // Other row
     if (otherNets.length > 0) {
-      var otherPorts = otherNets.reduce(function(n, net) { return n + (networkPortCounts[net] || 0); }, 0);
-      var otherActive = true;
+      var otherActive2 = true;
       var otherRow = document.createElement('div');
       otherRow.className = 'net-item';
-      otherRow.innerHTML = '<div class="net-check checked" data-network="__other__"></div>' +
-                           '<span class="net-label">Other</span>' +
-                           '<span class="net-count">' + otherPorts + '</span>';
+      var otherChk = document.createElement('div');
+      otherChk.className = 'net-check checked';
+      otherChk.setAttribute('data-network', '__other__');
+      var otherLbl = document.createElement('span');
+      otherLbl.className = 'net-label';
+      otherLbl.textContent = 'Other';
+      otherRow.appendChild(otherChk);
+      otherRow.appendChild(otherLbl);
       otherRow.addEventListener('click', function() {
-        var chk = this.querySelector('.net-check');
-        otherActive = !chk.classList.contains('checked');
-        otherNets.forEach(function(net) { activeNetworks[net] = otherActive; });
+        otherActive2 = !otherChk.classList.contains('checked');
+        otherNets.forEach(function(net) { activeNetworks[net] = otherActive2; });
         applyFilters();
-        chk.classList.toggle('checked', otherActive);
+        otherChk.classList.toggle('checked', otherActive2);
       });
       dropdown.appendChild(otherRow);
     }
+
+    // ── ALL PLUGS section ──
+    dropdown.appendChild(makeSection('All Plugs'));
+    [
+      { label: 'CCS',        key: 'ccs' },
+      { label: 'NACS',       key: 'nacs' },
+      { label: 'Tesla-Only', key: 'tesla_only' },
+      { label: 'CHAdeMO',    key: 'chademo' }
+    ].forEach(function(plug) {
+      var row = makeCheckRow(plug.label, true, function(val, chk) {
+        activePlugs[plug.key] = val;
+        chk.classList.toggle('checked', val);
+        applyFilters();
+      });
+      dropdown.appendChild(row);
+    });
+
+    // ── ALL kW MAX section ──
+    dropdown.appendChild(makeSection('All kW Max'));
+    [
+      { label: '50',      key: 'k50' },
+      { label: '51-149',  key: 'k51_149' },
+      { label: '150-249', key: 'k150_249' },
+      { label: '250-349', key: 'k250_349' },
+      { label: '350+',    key: 'k350plus' }
+    ].forEach(function(band) {
+      var row = makeCheckRow(band.label, true, function(val, chk) {
+        activeKw[band.key] = val;
+        chk.classList.toggle('checked', val);
+        applyFilters();
+      });
+      dropdown.appendChild(row);
+    });
+
+    // ── INCLUDE section ──
+    dropdown.appendChild(makeSection('Include'));
+
+    // Dealerships - preselected
+    var dealRow = makeCheckRow('Dealerships', true, function(val, chk) {
+      includeDealerships = val;
+      chk.classList.toggle('checked', val);
+      applyFilters();
+    });
+    dropdown.appendChild(dealRow);
+
+    // Restricted - not preselected
+    var restRow = makeCheckRow('Restricted', false, function(val, chk) {
+      includeRestricted = val;
+      chk.classList.toggle('checked', val);
+      applyFilters();
+    });
+    dropdown.appendChild(restRow);
   }
 
   // ── Build map ──
@@ -515,7 +646,9 @@ body {
         lng:        parseFloat(row.longitude_n),
         kw:         row.kw ? row.kw.trim() : '',
         connectors: row.dcfc ? row.dcfc.trim() : '',
-        plugshare:  row.plugshare_link ? row.plugshare_link.trim() : ''
+        plugshare:  row.plugshare_link ? row.plugshare_link.trim() : '',
+        facility_type: row.facility_type ? row.facility_type.trim() : '',
+        access:     row.public ? row.public.trim().toUpperCase() : 'PUBLIC'
       };
     }).filter(function(s) { return !isNaN(s.lat) && !isNaN(s.lng); });
 
