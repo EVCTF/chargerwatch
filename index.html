@@ -243,12 +243,12 @@ body {
     <span class="menu-chevron">›</span>
   </a>
 
-  <!-- About (expands inline) -->
-  <div class="menu-row" id="row-about" role="button" aria-expanded="false" tabindex="0">
+  <!-- About -->
+  <a href="about.html" class="menu-row">
     <span class="menu-icon icon-more">ℹ️</span>
     <span class="menu-label">About</span>
-    <span class="menu-chevron" id="about-top-chevron">›</span>
-  </div>
+    <span class="menu-chevron">›</span>
+  </a>
 
   <!-- Contact -->
   <a href="contact.html" class="menu-row" style="border-bottom:none;">
@@ -259,14 +259,6 @@ body {
 
 </div>
 
-<!-- About expand panel -->
-<div class="card" id="about-top-panel" style="display:none;">
-  <div style="padding:16px;">
-    <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;margin-bottom:10px;">Maryland promised reliable, accurately metered, and fairly taxed public EV charging. We track whether that promise is being kept.</p>
-    <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;margin-bottom:10px;"><a href="https://chargerwatch.org/" style="color:var(--blue);">ChargerWatch.org</a> delivers independent data on charger reliability, compliance, prices and taxes - collected by EV drivers who actually use these stations every day.</p>
-    <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;margin-bottom:10px;">A project of the EV Charging Task Force (EVCTF), a volunteer group of Maryland EV drivers. Published in partnership with <a href="https://pluginsites.org/" style="color:var(--blue);" target="_blank" rel="noopener">PlugInSites.org</a>.</p>
-    <a href="methodology.html" style="font-size:14px;color:var(--blue);text-decoration:none;">Methodology ›</a>
-  </div>
 </div>
 
 </div>
@@ -277,13 +269,7 @@ body {
 
 
 
-<div class="section-label">Maryland Public Fast Chargers</div>
-
-<div class="card">
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0;">
-    <div style="padding: 18px 16px; text-align: center; border-right: 1px solid var(--rule);">
-      <div style="font-size: 32px; font-weight: 700; color: var(--amber); line-height: 1; margin-bottom: 4px;">350</div>
-      <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-light);">Sites</div>
+<div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-light);">Sites</div>
     </div>
     <div style="padding: 18px 16px; text-align: center;">
       <div style="font-size: 32px; font-weight: 700; color: var(--amber); line-height: 1; margin-bottom: 4px;">1,462</div>
@@ -293,14 +279,11 @@ body {
   <div style="padding: 10px 16px; border-top: 1px solid var(--rule); font-size: 11px; color: var(--ink-light); text-align: center;">Public DCFC sites tracked as of July 2026</div>
 </div>
 
-<div class="section-label">About</div>
+</div>
 
-<div class="card">
-  <div style="padding: 16px;">
-    <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;margin-bottom:10px;">Maryland promised reliable, accurately metered, and fairly taxed public EV charging. We track whether that promise is being kept.</p>
-    <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;margin-bottom:10px;"><a href="https://chargerwatch.org" style="color:var(--blue);">ChargerWatch.org</a> delivers independent data on charger reliability, compliance, prices and taxes - collected by EV drivers who actually use these stations every day.</p>
-    <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;">A project of the EV Charging Task Force (EVCTF), a volunteer group of Maryland EV drivers. Published in partnership with <a href="https://pluginsites.org/" style="color:var(--blue);" target="_blank" rel="noopener">PlugInSites.org</a>.</p>
-  </div>
+<!-- Hero card -->
+<div style="background: var(--bg-card); border: 2px solid var(--blue); margin: 0 16px 12px; border-radius: var(--radius); padding: 16px 18px;">
+  <p style="font-size: 15px; font-weight: 400; line-height: 1.65; color: var(--ink);">ChargerWatch.org records independent data on charger locations, reliability, regulatory compliance, pricing, and taxes &mdash; collected by EV drivers who actually use these stations every day.</p>
 </div>
 
 <footer id="site-footer">
@@ -309,20 +292,6 @@ body {
 </footer>
 
 <script>
-// ── About toggle ──
-var aboutTopOpen = false;
-var aboutTopPanel = document.getElementById('about-top-panel');
-var aboutTopRow = document.getElementById('row-about');
-if (aboutTopRow) {
-  aboutTopRow.addEventListener('click', function() {
-    aboutTopOpen = !aboutTopOpen;
-    aboutTopPanel.style.display = aboutTopOpen ? 'block' : 'none';
-    document.getElementById('about-top-chevron').style.transform = aboutTopOpen ? 'rotate(90deg)' : '';
-    document.getElementById('about-top-chevron').style.transition = 'transform 0.2s';
-    this.setAttribute('aria-expanded', aboutTopOpen);
-  });
-}
-
 // ── More toggle (kept for compatibility) ──
 var moreOpen = false;
 

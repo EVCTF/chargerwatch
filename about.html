@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>About &mdash; ChargerWatch.org</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:        #F2F2F7;
+  --bg-card:   #FFFFFF;
+  --ink:       #1C1C1E;
+  --ink-mid:   #3A3A3C;
+  --ink-light: #8E8E93;
+  --rule:      #E5E5EA;
+  --blue:      #2551C0;
+  --radius:    12px;
+  --shadow:    0 1px 3px rgba(0,0,0,0.08);
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 0 48px;
+}
+#nav {
+  display: flex; align-items: center; gap: 12px;
+  padding: 52px 16px 16px;
+}
+#nav-back { font-size: 17px; color: var(--blue); text-decoration: none; }
+#nav-title { font-size: 17px; font-weight: 600; }
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  margin: 0 16px 12px;
+  box-shadow: var(--shadow);
+  padding: 18px 16px;
+}
+.section-label {
+  font-size: 13px; font-weight: 600;
+  color: var(--ink-light);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 8px 20px 8px;
+}
+h1 {
+  font-size: 22px; font-weight: 700;
+  color: var(--ink); margin-bottom: 14px;
+  letter-spacing: -0.3px;
+}
+h2 {
+  font-size: 16px; font-weight: 700;
+  color: var(--ink); margin-bottom: 10px;
+  letter-spacing: -0.2px;
+}
+p {
+  font-size: 15px; color: var(--ink-mid);
+  line-height: 1.7; margin-bottom: 12px;
+}
+p:last-child { margin-bottom: 0; }
+a { color: var(--blue); text-decoration: none; }
+ul {
+  list-style: none; margin: 0 0 12px; padding: 0;
+}
+ul li {
+  font-size: 15px; color: var(--ink-mid);
+  line-height: 1.65; padding: 4px 0 4px 20px;
+  position: relative;
+}
+ul li::before {
+  content: '•'; color: var(--blue);
+  position: absolute; left: 4px; font-weight: 700;
+}
+ul li strong { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a href="/" id="nav-back">&#8249; Back</a>
+  <span id="nav-title">About</span>
+</nav>
+
+<div class="card">
+  <h1>About ChargerWatch</h1>
+  <p><a href="https://chargerwatch.org/">ChargerWatch.org</a> is a citizen-led initiative that records and publishes independent data on public EV charging in Maryland.</p>
+  <p>It was created by the EV Charging Task Force, a volunteer group of Maryland electric vehicle drivers who regularly use and depend on the state's charging infrastructure.</p>
+  <p>We believe that the best measure of charger performance comes from the people who actually plug in every day. Our data comes from direct observation, driver reports, photos, and systematic surveys &mdash; not from network operators or government agencies alone.</p>
+  <p>By making this information public and easy to access, we aim to increase transparency, highlight what's working, and drive accountability where improvements are needed.</p>
+</div>
+
+<div class="section-label">What We Track</div>
+<div class="card">
+  <ul>
+    <li><strong>Locations &amp; Availability</strong> &mdash; Where chargers are (and aren&rsquo;t) across Maryland</li>
+    <li><strong>Reliability &amp; Uptime</strong> &mdash; Real-world operability and downtime patterns</li>
+    <li><strong>Regulatory Compliance</strong> &mdash; Adherence to state rules on metering accuracy, pricing display, uptime standards, and consumer protections</li>
+    <li><strong>Pricing &amp; Costs</strong> &mdash; What drivers actually pay, including electricity rates, fees, taxes, and any surprises at the charger</li>
+    <li><strong>Driver Experience</strong> &mdash; Photos, reports, and qualitative feedback from real users</li>
+  </ul>
+</div>
+
+<div class="section-label">Our Approach</div>
+<div class="card">
+  <ul>
+    <li><strong>Driver-powered</strong> &mdash; Data is collected primarily by EV drivers who use the public charging stations.</li>
+    <li><strong>Independent</strong> &mdash; We are not affiliated with charger networks, utilities, or government agencies.</li>
+    <li><strong>Transparent</strong> &mdash; Our methodology, data sources, and any limitations are documented.</li>
+    <li><strong>Action-oriented</strong> &mdash; We share findings with regulators, legislators, utilities, and the public to support better policy and maintenance.</li>
+    <li><strong>Collaborative</strong> &mdash; We welcome verified driver submissions, photos, and reports to strengthen the dataset.</li>
+  </ul>
+</div>
+
+<div class="section-label">Why This Matters</div>
+<div class="card">
+  <p>Maryland has invested significant public resources and set ambitious goals for EV adoption and charging infrastructure. Drivers were promised reliable, fairly priced, and accurately metered charging.</p>
+  <p>When chargers are frequently out of service, hard to find, mis-metered, or more expensive than expected, it undermines confidence in the transition to electric vehicles. Independent, real-world data helps close the gap between promises and performance.</p>
+</div>
+
+<div class="section-label">Get Involved</div>
+<div class="card">
+  <p>Help make Maryland's charging network better:</p>
+  <ul>
+    <li>Submit a charger report or photo</li>
+    <li>Share your experience at a specific station</li>
+    <li>Join volunteer survey efforts</li>
+    <li>Suggest improvements or new data points</li>
+  </ul>
+</div>
+
+</body>
+</html>
