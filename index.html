@@ -265,21 +265,145 @@ body {
 
 
 
-<!-- More expand panel -->
 
 
-
-<div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-light);">Sites</div>
-    </div>
-    <div style="padding: 18px 16px; text-align: center;">
-      <div style="font-size: 32px; font-weight: 700; color: var(--amber); line-height: 1; margin-bottom: 4px;">1,462</div>
-      <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-light);">Ports</div>
-    </div>
-  </div>
-  <div style="padding: 10px 16px; border-top: 1px solid var(--rule); font-size: 11px; color: var(--ink-light); text-align: center;">Public DCFC sites tracked as of July 2026</div>
+<!-- Hero card -->
+<div style="background: var(--bg-card); border: 2px solid var(--blue); margin: 0 16px 12px; border-radius: var(--radius); padding: 16px 18px;">
+  <p style="font-size: 15px; font-weight: 400; line-height: 1.65; color: var(--ink);">ChargerWatch.org records independent data on charger locations, reliability, regulatory compliance, pricing, and taxes &mdash; collected by EV drivers who actually use these stations every day.</p>
 </div>
 
+<footer id="site-footer">
+  <p>Map tiles &copy; OpenStreetMap contributors</p>
+  <p>Boundary data &copy; US Census Bureau</p>
+</footer>
+
+<script>
+// ── More toggle (kept for compatibility) ──
+var moreOpen = false;
+
+function toggleMore() {
+  moreOpen = !moreOpen;
+  var panel = document.getElementById('more-panel');
+  var chevron = document.getElementById('more-chevron');
+  var row = document.getElementById('row-more');
+  panel.style.display = moreOpen ? 'block' : 'none';
+  chevron.style.transform = moreOpen ? 'rotate(90deg)' : '';
+  chevron.style.transition = 'transform 0.2s';
+  row.setAttribute('aria-expanded', moreOpen);
+}
+
+document.getElementById('row-more').addEventListener('click', toggleMore);
+document.getElementById('row-more').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMore(); }
+});
+
+// About sub-toggle
+var aboutOpen = false;
+document.getElementById('about-toggle').addEventListener('click', function() {
+  aboutOpen = !aboutOpen;
+  document.getElementById('about-content').style.display = aboutOpen ? 'block' : 'none';
+  document.getElementById('about-chevron').style.transform = aboutOpen ? 'rotate(90deg)' : '';
+  document.getElementById('about-chevron').style.transition = 'transform 0.2s';
+});
+document.getElementById('about-toggle').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
+});
+
+</script>
+</body>
+</html></div>
+
+<!-- Hero card -->
+<div style="background: var(--bg-card); border: 2px solid var(--blue); margin: 0 16px 12px; border-radius: var(--radius); padding: 16px 18px;">
+  <p style="font-size: 15px; font-weight: 400; line-height: 1.65; color: var(--ink);">ChargerWatch.org records independent data on charger locations, reliability, regulatory compliance, pricing, and taxes &mdash; collected by EV drivers who actually use these stations every day.</p>
 </div>
+
+<footer id="site-footer">
+  <p>Map tiles &copy; OpenStreetMap contributors</p>
+  <p>Boundary data &copy; US Census Bureau</p>
+</footer>
+
+<script>
+// ── More toggle (kept for compatibility) ──
+var moreOpen = false;
+
+function toggleMore() {
+  moreOpen = !moreOpen;
+  var panel = document.getElementById('more-panel');
+  var chevron = document.getElementById('more-chevron');
+  var row = document.getElementById('row-more');
+  panel.style.display = moreOpen ? 'block' : 'none';
+  chevron.style.transform = moreOpen ? 'rotate(90deg)' : '';
+  chevron.style.transition = 'transform 0.2s';
+  row.setAttribute('aria-expanded', moreOpen);
+}
+
+document.getElementById('row-more').addEventListener('click', toggleMore);
+document.getElementById('row-more').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMore(); }
+});
+
+// About sub-toggle
+var aboutOpen = false;
+document.getElementById('about-toggle').addEventListener('click', function() {
+  aboutOpen = !aboutOpen;
+  document.getElementById('about-content').style.display = aboutOpen ? 'block' : 'none';
+  document.getElementById('about-chevron').style.transform = aboutOpen ? 'rotate(90deg)' : '';
+  document.getElementById('about-chevron').style.transition = 'transform 0.2s';
+});
+document.getElementById('about-toggle').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
+});
+
+</script>
+</body>
+</html>
+
+<!-- Hero card -->
+<div style="background: var(--bg-card); border: 2px solid var(--blue); margin: 0 16px 12px; border-radius: var(--radius); padding: 16px 18px;">
+  <p style="font-size: 15px; font-weight: 400; line-height: 1.65; color: var(--ink);">ChargerWatch.org records independent data on charger locations, reliability, regulatory compliance, pricing, and taxes &mdash; collected by EV drivers who actually use these stations every day.</p>
+</div>
+
+<footer id="site-footer">
+  <p>Map tiles &copy; OpenStreetMap contributors</p>
+  <p>Boundary data &copy; US Census Bureau</p>
+</footer>
+
+<script>
+// ── More toggle (kept for compatibility) ──
+var moreOpen = false;
+
+function toggleMore() {
+  moreOpen = !moreOpen;
+  var panel = document.getElementById('more-panel');
+  var chevron = document.getElementById('more-chevron');
+  var row = document.getElementById('row-more');
+  panel.style.display = moreOpen ? 'block' : 'none';
+  chevron.style.transform = moreOpen ? 'rotate(90deg)' : '';
+  chevron.style.transition = 'transform 0.2s';
+  row.setAttribute('aria-expanded', moreOpen);
+}
+
+document.getElementById('row-more').addEventListener('click', toggleMore);
+document.getElementById('row-more').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMore(); }
+});
+
+// About sub-toggle
+var aboutOpen = false;
+document.getElementById('about-toggle').addEventListener('click', function() {
+  aboutOpen = !aboutOpen;
+  document.getElementById('about-content').style.display = aboutOpen ? 'block' : 'none';
+  document.getElementById('about-chevron').style.transform = aboutOpen ? 'rotate(90deg)' : '';
+  document.getElementById('about-chevron').style.transition = 'transform 0.2s';
+});
+document.getElementById('about-toggle').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
+});
+
+</script>
+</body>
+</html></div>
 
 <!-- Hero card -->
 <div style="background: var(--bg-card); border: 2px solid var(--blue); margin: 0 16px 12px; border-radius: var(--radius); padding: 16px 18px;">
