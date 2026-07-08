@@ -5,11 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>ChargerWatch.org</title>
-<meta name="description" content="Tracking Maryland EV charging station reliability, billing accuracy, and tax compliance. A project of the EV Charging Task Force and PlugInSites.org.">
+<meta name="description" content="A citizen-led initiative that records and publishes independent data on public EV charging in Maryland. A project of the EV Charging Task Force and PlugInSites.org.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="shortcut icon" href="favicon.svg">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -19,12 +17,8 @@
   --ink-mid:   #3A3A3C;
   --ink-light: #8E8E93;
   --rule:      #E5E5EA;
-  --amber:     #2551C0;
-  --amber-lt:  #E8EEF8;
-  --blue:      #2B4B8C;
+  --blue:      #2551C0;
   --blue-lt:   #E8EEF8;
-  --red:       #993C1D;
-  --green:     #0F6E56;
   --radius:    12px;
   --radius-sm: 8px;
   --shadow:    0 1px 3px rgba(0,0,0,0.08);
@@ -42,26 +36,12 @@ body {
 }
 
 /* ── Header ── */
-#site-header {
-  padding: 44px 20px 12px;
-  background: var(--bg);
-}
-#site-name {
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  color: var(--ink);
-  line-height: 1.1;
-}
-#site-name span { color: var(--amber); }
-#site-tagline {
-  font-size: 13px;
-  color: var(--ink-light);
-  margin-top: 4px;
-  line-height: 1.4;
-}
+#site-header { padding: 44px 20px 12px; background: var(--bg); }
+#site-name { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; color: var(--ink); line-height: 1.1; }
+#site-name span { color: var(--blue); }
+#site-tagline { font-size: 13px; color: var(--ink-light); margin-top: 4px; line-height: 1.4; }
 
-/* ── Menu card ── */
+/* ── Cards ── */
 .card {
   background: var(--bg-card);
   border-radius: var(--radius);
@@ -69,137 +49,52 @@ body {
   box-shadow: var(--shadow);
   overflow: hidden;
 }
+
+/* ── Menu rows ── */
 .menu-row {
-  display: flex;
-  align-items: center;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--rule);
-  cursor: pointer;
-  text-decoration: none;
-  color: var(--ink);
-  gap: 14px;
-  transition: background 0.1s;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
+  display: flex; align-items: center;
+  padding: 14px 16px; border-bottom: 1px solid var(--rule);
+  cursor: pointer; text-decoration: none; color: var(--ink);
+  gap: 14px; transition: background 0.1s;
+  -webkit-tap-highlight-color: transparent; user-select: none;
 }
 .menu-row:last-child { border-bottom: none; }
 .menu-row:active { background: var(--bg); }
 .menu-icon {
-  width: 32px; height: 32px;
-  border-radius: var(--radius-sm);
+  width: 32px; height: 32px; border-radius: var(--radius-sm);
   display: flex; align-items: center; justify-content: center;
-  font-size: 17px;
-  flex-shrink: 0;
+  font-size: 17px; flex-shrink: 0; background: var(--blue-lt);
 }
-.icon-submit  { background: #E8EEF8; }
-.icon-issues  { background: #E8EEF8; }
-.icon-stats   { background: #E8EEF8; }
-.icon-map     { background: #E8EEF8; }
-.icon-more    { background: #E8EEF8; }
-.menu-label {
-  flex: 1;
-  font-size: 17px;
-  font-weight: 500;
-  letter-spacing: -0.2px;
-}
-.menu-chevron {
-  color: var(--ink-light);
-  font-size: 14px;
-  flex-shrink: 0;
-}
-
-/* ── Inline expand panels ── */
-.expand-panel {
-  display: none;
-  padding: 0 16px 16px;
-  animation: fadeIn 0.2s ease;
-}
-.expand-panel.open { display: block; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
-
-/* ── Stats panel ── */
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-.stat-card {
-  background: var(--bg);
-  border-radius: var(--radius-sm);
-  padding: 14px 12px;
-  text-align: center;
-}
-.stat-card-num {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--amber);
-  line-height: 1;
-  margin-bottom: 4px;
-}
-.stat-card-label {
-  font-size: 11px;
-  color: var(--ink-light);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  line-height: 1.3;
-}
-.stat-note {
-  font-size: 12px;
-  color: var(--ink-light);
-  text-align: center;
-  padding: 4px 0 0;
-}
-#stats-loading { text-align: center; font-size: 13px; color: var(--ink-light); padding: 12px 0; }
-
-/* ── About panel ── */
-.about-text {
-  font-size: 14px;
-  color: var(--ink-mid);
-  line-height: 1.65;
-  margin-bottom: 10px;
-}
-.about-links {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.about-link {
-  font-size: 14px;
-  color: var(--blue);
-  text-decoration: none;
-  padding: 10px 14px;
-  background: var(--bg);
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-.about-link:active { opacity: 0.7; }
-.about-expandable { cursor: pointer; }
+.menu-label { flex: 1; font-size: 17px; font-weight: 500; letter-spacing: -0.2px; }
+.menu-chevron { color: var(--ink-light); font-size: 14px; flex-shrink: 0; }
 
 /* ── Section label ── */
 .section-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink-light);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-size: 13px; font-weight: 600; color: var(--ink-light);
+  text-transform: uppercase; letter-spacing: 0.06em;
   padding: 16px 20px 8px;
 }
 
+/* ── About expand ── */
+.expand-panel { display: none; padding: 0 16px 16px; }
+.expand-panel.open { display: block; }
+.about-text { font-size: 14px; color: var(--ink-mid); line-height: 1.65; margin-bottom: 10px; }
+.about-links { display: flex; flex-direction: column; gap: 8px; }
+.about-link {
+  font-size: 14px; color: var(--blue); text-decoration: none;
+  padding: 10px 14px; background: var(--bg); border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 0;
+}
+.about-link:active { opacity: 0.7; }
+
 /* ── Footer ── */
 #site-footer {
-  text-align: center;
-  padding: 24px 20px 0;
-  font-size: 11px;
-  color: var(--ink-light);
-  line-height: 1.8;
+  text-align: center; padding: 24px 20px 0;
+  font-size: 11px; color: var(--ink-light); line-height: 1.8;
 }
 #site-footer a { color: var(--ink-light); text-decoration: underline; }
 
-/* ── Desktop fallback ── */
 @media (min-width: 481px) {
   body { padding-top: 20px; }
   #site-header { padding-top: 32px; }
@@ -215,216 +110,54 @@ body {
 
 <div class="card" id="main-menu">
 
-  <!-- Charger Map -->
   <a href="map.html" class="menu-row">
-    <span class="menu-icon icon-map">📍</span>
+    <span class="menu-icon">📍</span>
     <span class="menu-label">Charger Map</span>
     <span class="menu-chevron">›</span>
   </a>
 
-  <!-- Charger Stats -->
   <a href="stats.html" class="menu-row">
-    <span class="menu-icon icon-stats">📊</span>
+    <span class="menu-icon">📊</span>
     <span class="menu-label">Charger Stats</span>
     <span class="menu-chevron">›</span>
   </a>
 
-  <!-- Report an Issue -->
   <a href="https://civicspot.io/maryland-ev-chargers/" target="_blank" rel="noopener" class="menu-row">
-    <span class="menu-icon icon-submit">📋</span>
+    <span class="menu-icon">📋</span>
     <span class="menu-label">Report an Issue</span>
     <span class="menu-chevron">›</span>
   </a>
 
-  <!-- Browse Issues -->
-  <a href="https://civicspot.io/maryland-ev-chargers/" target="_blank" rel="noopener" class="menu-row">
-    <span class="menu-icon icon-issues">🔍</span>
+  <a href="cases.html" class="menu-row">
+    <span class="menu-icon">🔍</span>
     <span class="menu-label">Browse Issues</span>
     <span class="menu-chevron">›</span>
   </a>
 
-  <!-- About -->
   <a href="about.html" class="menu-row">
-    <span class="menu-icon icon-more">ℹ️</span>
+    <span class="menu-icon">ℹ️</span>
     <span class="menu-label">About</span>
     <span class="menu-chevron">›</span>
   </a>
 
-  <!-- Contact -->
   <a href="contact.html" class="menu-row" style="border-bottom:none;">
-    <span class="menu-icon icon-submit">✉️</span>
+    <span class="menu-icon">✉️</span>
     <span class="menu-label">Contact</span>
     <span class="menu-chevron">›</span>
   </a>
 
 </div>
 
-</div>
-
-</div>
-
-
-
-
-
 <div class="section-label">Our Mission</div>
 
-<!-- Hero card -->
 <div style="background: var(--bg-card); border: 2px solid var(--blue); margin: 0 16px 12px; border-radius: var(--radius); padding: 16px 18px;">
   <p style="font-size: 15px; font-weight: 400; line-height: 1.65; color: var(--ink);"><a href="https://chargerwatch.org/" style="color:var(--blue);">ChargerWatch.org</a> is a citizen-led initiative that records and publishes independent data on public EV charging in Maryland.</p>
 </div>
-
-
-
-<script>
-// ── More toggle (kept for compatibility) ──
-var moreOpen = false;
-
-function toggleMore() {
-  moreOpen = !moreOpen;
-  var panel = document.getElementById('more-panel');
-  var chevron = document.getElementById('more-chevron');
-  var row = document.getElementById('row-more');
-  panel.style.display = moreOpen ? 'block' : 'none';
-  chevron.style.transform = moreOpen ? 'rotate(90deg)' : '';
-  chevron.style.transition = 'transform 0.2s';
-  row.setAttribute('aria-expanded', moreOpen);
-}
-
-document.getElementById('row-more').addEventListener('click', toggleMore);
-document.getElementById('row-more').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMore(); }
-});
-
-// About sub-toggle
-var aboutOpen = false;
-document.getElementById('about-toggle').addEventListener('click', function() {
-  aboutOpen = !aboutOpen;
-  document.getElementById('about-content').style.display = aboutOpen ? 'block' : 'none';
-  document.getElementById('about-chevron').style.transform = aboutOpen ? 'rotate(90deg)' : '';
-  document.getElementById('about-chevron').style.transition = 'transform 0.2s';
-});
-document.getElementById('about-toggle').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
-});
-
-</script>
-</body>
-</html></div>
-
-
-
-<script>
-// ── More toggle (kept for compatibility) ──
-var moreOpen = false;
-
-function toggleMore() {
-  moreOpen = !moreOpen;
-  var panel = document.getElementById('more-panel');
-  var chevron = document.getElementById('more-chevron');
-  var row = document.getElementById('row-more');
-  panel.style.display = moreOpen ? 'block' : 'none';
-  chevron.style.transform = moreOpen ? 'rotate(90deg)' : '';
-  chevron.style.transition = 'transform 0.2s';
-  row.setAttribute('aria-expanded', moreOpen);
-}
-
-document.getElementById('row-more').addEventListener('click', toggleMore);
-document.getElementById('row-more').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMore(); }
-});
-
-// About sub-toggle
-var aboutOpen = false;
-document.getElementById('about-toggle').addEventListener('click', function() {
-  aboutOpen = !aboutOpen;
-  document.getElementById('about-content').style.display = aboutOpen ? 'block' : 'none';
-  document.getElementById('about-chevron').style.transform = aboutOpen ? 'rotate(90deg)' : '';
-  document.getElementById('about-chevron').style.transition = 'transform 0.2s';
-});
-document.getElementById('about-toggle').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
-});
-
-</script>
-</body>
-</html>
-
-
-
-<script>
-// ── More toggle (kept for compatibility) ──
-var moreOpen = false;
-
-function toggleMore() {
-  moreOpen = !moreOpen;
-  var panel = document.getElementById('more-panel');
-  var chevron = document.getElementById('more-chevron');
-  var row = document.getElementById('row-more');
-  panel.style.display = moreOpen ? 'block' : 'none';
-  chevron.style.transform = moreOpen ? 'rotate(90deg)' : '';
-  chevron.style.transition = 'transform 0.2s';
-  row.setAttribute('aria-expanded', moreOpen);
-}
-
-document.getElementById('row-more').addEventListener('click', toggleMore);
-document.getElementById('row-more').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMore(); }
-});
-
-// About sub-toggle
-var aboutOpen = false;
-document.getElementById('about-toggle').addEventListener('click', function() {
-  aboutOpen = !aboutOpen;
-  document.getElementById('about-content').style.display = aboutOpen ? 'block' : 'none';
-  document.getElementById('about-chevron').style.transform = aboutOpen ? 'rotate(90deg)' : '';
-  document.getElementById('about-chevron').style.transition = 'transform 0.2s';
-});
-document.getElementById('about-toggle').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
-});
-
-</script>
-</body>
-</html></div>
 
 <footer id="site-footer">
   <p>Map tiles &copy; OpenStreetMap contributors</p>
   <p>Boundary data &copy; US Census Bureau</p>
 </footer>
 
-<script>
-// ── More toggle (kept for compatibility) ──
-var moreOpen = false;
-
-function toggleMore() {
-  moreOpen = !moreOpen;
-  var panel = document.getElementById('more-panel');
-  var chevron = document.getElementById('more-chevron');
-  var row = document.getElementById('row-more');
-  panel.style.display = moreOpen ? 'block' : 'none';
-  chevron.style.transform = moreOpen ? 'rotate(90deg)' : '';
-  chevron.style.transition = 'transform 0.2s';
-  row.setAttribute('aria-expanded', moreOpen);
-}
-
-document.getElementById('row-more').addEventListener('click', toggleMore);
-document.getElementById('row-more').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMore(); }
-});
-
-// About sub-toggle
-var aboutOpen = false;
-document.getElementById('about-toggle').addEventListener('click', function() {
-  aboutOpen = !aboutOpen;
-  document.getElementById('about-content').style.display = aboutOpen ? 'block' : 'none';
-  document.getElementById('about-chevron').style.transform = aboutOpen ? 'rotate(90deg)' : '';
-  document.getElementById('about-chevron').style.transition = 'transform 0.2s';
-});
-document.getElementById('about-toggle').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
-});
-
-</script>
 </body>
 </html>
