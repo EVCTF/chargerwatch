@@ -568,15 +568,48 @@ body {
 
     // ── ALL PLUGS section ──
     dropdown.appendChild(makeSection('All Plugs'));
+
+    // All Plugs toggle row
+    var allPlugsRow = document.createElement('div');
+    allPlugsRow.className = 'net-item all-row';
+    var allPlugsChk = document.createElement('div');
+    allPlugsChk.className = 'net-check checked';
+    allPlugsChk.id = 'all-plugs-chk';
+    var allPlugsLbl = document.createElement('span');
+    allPlugsLbl.className = 'net-label';
+    allPlugsLbl.textContent = 'All Plugs';
+    allPlugsRow.appendChild(allPlugsChk);
+    allPlugsRow.appendChild(allPlugsLbl);
+    allPlugsRow.addEventListener('click', function() {
+      var allOn = !allPlugsChk.classList.contains('checked');
+      Object.keys(activePlugs).forEach(function(k) { activePlugs[k] = allOn; });
+      dropdown.querySelectorAll('.plug-chk').forEach(function(c) { c.classList.toggle('checked', allOn); });
+      allPlugsChk.classList.toggle('checked', allOn);
+      applyFilters();
+    });
+    dropdown.appendChild(allPlugsRow);
+
     [
       { label: 'CCS',        key: 'ccs' },
       { label: 'NACS',       key: 'nacs' },
       { label: 'Tesla-Only', key: 'tesla_only' },
       { label: 'CHAdeMO',    key: 'chademo' }
     ].forEach(function(plug) {
-      var row = makeCheckRow(plug.label, true, function(val, chk) {
+      var row = document.createElement('div');
+      row.className = 'net-item';
+      var chk = document.createElement('div');
+      chk.className = 'net-check checked plug-chk';
+      var lbl = document.createElement('span');
+      lbl.className = 'net-label';
+      lbl.textContent = plug.label;
+      row.appendChild(chk);
+      row.appendChild(lbl);
+      row.addEventListener('click', function() {
+        var val = !chk.classList.contains('checked');
         activePlugs[plug.key] = val;
         chk.classList.toggle('checked', val);
+        var allOn = Object.keys(activePlugs).every(function(k) { return activePlugs[k]; });
+        allPlugsChk.classList.toggle('checked', allOn);
         applyFilters();
       });
       dropdown.appendChild(row);
@@ -584,16 +617,49 @@ body {
 
     // ── ALL kW MAX section ──
     dropdown.appendChild(makeSection('All kW Max'));
+
+    // All kW toggle row
+    var allKwRow = document.createElement('div');
+    allKwRow.className = 'net-item all-row';
+    var allKwChk = document.createElement('div');
+    allKwChk.className = 'net-check checked';
+    allKwChk.id = 'all-kw-chk';
+    var allKwLbl = document.createElement('span');
+    allKwLbl.className = 'net-label';
+    allKwLbl.textContent = 'All kW';
+    allKwRow.appendChild(allKwChk);
+    allKwRow.appendChild(allKwLbl);
+    allKwRow.addEventListener('click', function() {
+      var allOn = !allKwChk.classList.contains('checked');
+      Object.keys(activeKw).forEach(function(k) { activeKw[k] = allOn; });
+      dropdown.querySelectorAll('.kw-chk').forEach(function(c) { c.classList.toggle('checked', allOn); });
+      allKwChk.classList.toggle('checked', allOn);
+      applyFilters();
+    });
+    dropdown.appendChild(allKwRow);
+
     [
-      { label: '50',      key: 'k50' },
-      { label: '51-149',  key: 'k51_149' },
-      { label: '150-249', key: 'k150_249' },
-      { label: '250-349', key: 'k250_349' },
-      { label: '350+',    key: 'k350plus' }
+      { label: '≤50 kW',   key: 'k50' },
+      { label: '51-149 kW', key: 'k51_149' },
+      { label: '150-249 kW',key: 'k150_249' },
+      { label: '250-349 kW',key: 'k250_349' },
+      { label: '350+ kW',   key: 'k350plus' }
     ].forEach(function(band) {
-      var row = makeCheckRow(band.label, true, function(val, chk) {
+      var row = document.createElement('div');
+      row.className = 'net-item';
+      var chk = document.createElement('div');
+      chk.className = 'net-check checked kw-chk';
+      var lbl = document.createElement('span');
+      lbl.className = 'net-label';
+      lbl.textContent = band.label;
+      row.appendChild(chk);
+      row.appendChild(lbl);
+      row.addEventListener('click', function() {
+        var val = !chk.classList.contains('checked');
         activeKw[band.key] = val;
         chk.classList.toggle('checked', val);
+        var allOn = Object.keys(activeKw).every(function(k) { return activeKw[k]; });
+        allKwChk.classList.toggle('checked', allOn);
         applyFilters();
       });
       dropdown.appendChild(row);
