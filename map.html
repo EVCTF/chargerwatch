@@ -220,7 +220,11 @@ body {
     <h5>ChargerWatch</h5>
     <div class="leg-row">
       <span class="leg-dot" style="background:transparent;border:2px solid #2551C0;width:10px;height:10px;"></span>
-      Public DCFC site
+      Public
+    </div>
+    <div class="leg-row">
+      <span class="leg-dot" style="background:transparent;border:2px solid #8E8E93;width:10px;height:10px;"></span>
+      Restricted
     </div>
   </div>
 
@@ -249,6 +253,7 @@ body {
   var ISSUES_URL   = PROXY + '?sheet=issues';
 
   var BLUE = '#2551C0';
+  var GREY = '#8E8E93';
   var ISSUE_COLOR = '#993C1D';
   var activeNetworks = {};
   var allActive = true;
@@ -320,9 +325,10 @@ body {
   }
 
   // ── Icons ──
-  function makeIcon() {
+  function makeIcon(color) {
+    var col = color || BLUE;
     var sz = 11;
-    var h = '<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:transparent;border:2px solid '+BLUE+';box-sizing:border-box;"></div>';
+    var h = '<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:transparent;border:2px solid '+col+';box-sizing:border-box;"></div>';
     return L.divIcon({ html: h, className: '', iconSize: [sz, sz], iconAnchor: [sz/2, sz/2] });
   }
   function makeIssueIcon() {
@@ -688,6 +694,7 @@ body {
   // ── Build map ──
   function buildMap(stations, issues) {
     var networks = {};
+    // Include all rows; PUBLIC drives color, PRIVATE shown only when Restricted is checked
     var pub = stations.filter(function(row) {
       return row.public && row.public.trim().toUpperCase() === 'PUBLIC';
     });
@@ -701,7 +708,7 @@ body {
 
     buildDropdown(networks);
 
-    allStations = pub.map(function(row) {
+    allStations = stations.map(function(row) {
       return {
         serial:     row.serial ? row.serial.trim() : '',
         name:       row.charging_location ? row.charging_location.trim() : '',
@@ -719,9 +726,10 @@ body {
     }).filter(function(s) { return !isNaN(s.lat) && !isNaN(s.lng); });
 
     allStations.forEach(function(s) {
-      var mk = L.marker([s.lat, s.lng], { icon: makeIcon() });
+      var color = s.access === 'PRIVATE' ? GREY : BLUE;
+      var mk = L.marker([s.lat, s.lng], { icon: makeIcon(color) });
       mk.on('click', function() { showDetail(s); });
-      mk.addTo(map);
+      if (s.access !== 'PRIVATE') mk.addTo(map);
       markerObjs.push({ marker: mk, station: s });
     });
 
