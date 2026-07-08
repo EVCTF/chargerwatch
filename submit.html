@@ -8,70 +8,43 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg:       #F2F2F7;
-  --bg-card:  #FFFFFF;
-  --ink:      #1C1C1E;
-  --ink-mid:  #3A3A3C;
+  --bg:      #F2F2F7;
+  --bg-card: #FFFFFF;
+  --ink:     #1C1C1E;
   --ink-light:#8E8E93;
-  --rule:     #E5E5EA;
-  --amber:    #2551C0;
-  --blue:     #2B4B8C;
-  --radius:   12px;
-  --radius-sm:8px;
-  --shadow:   0 1px 3px rgba(0,0,0,0.08);
+  --rule:    #E5E5EA;
+  --blue:    #2551C0;
+  --radius:  12px;
+  --shadow:  0 1px 3px rgba(0,0,0,0.08);
 }
+html, body { height: 100%; overflow: hidden; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
   background: var(--bg);
-  color: var(--ink);
-  min-height: 100vh;
+  display: flex; flex-direction: column;
   -webkit-font-smoothing: antialiased;
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 0 0 40px;
 }
 #nav {
   display: flex; align-items: center; gap: 12px;
-  padding: 52px 16px 16px;
+  padding: 52px 16px 12px;
+  background: var(--bg); flex-shrink: 0;
 }
 #nav-back { font-size: 17px; color: var(--blue); text-decoration: none; }
 #nav-title { font-size: 17px; font-weight: 600; }
-.section-label {
-  font-size: 13px; font-weight: 600;
+#frame-wrap { flex: 1; overflow: hidden; padding: 0 0 0 0; }
+#civicspot-frame {
+  width: 100%; height: 100%;
+  border: none;
+}
+#frame-fallback {
+  display: none;
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 14px;
   color: var(--ink-light);
-  text-transform: uppercase; letter-spacing: 0.06em;
-  padding: 8px 20px 8px;
+  line-height: 1.6;
 }
-.card {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  margin: 0 16px 12px;
-  box-shadow: var(--shadow);
-  overflow: hidden;
-}
-.choice-row {
-  display: flex; align-items: center;
-  padding: 16px; gap: 14px;
-  border-bottom: 1px solid var(--rule);
-  text-decoration: none; color: var(--ink);
-  -webkit-tap-highlight-color: transparent;
-}
-.choice-row:last-child { border-bottom: none; }
-.choice-row:active { background: var(--bg); }
-.choice-icon {
-  width: 40px; height: 40px;
-  border-radius: var(--radius-sm);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; flex-shrink: 0;
-}
-.choice-text { flex: 1; }
-.choice-title { font-size: 16px; font-weight: 600; margin-bottom: 3px; }
-.choice-desc { font-size: 13px; color: var(--ink-light); line-height: 1.4; }
-.choice-chevron { color: var(--ink-light); font-size: 14px; }
-.note-card {
-  padding: 14px 16px;
-  font-size: 13px; color: var(--ink-light); line-height: 1.6;
-}
+#frame-fallback a { color: var(--blue); }
 </style>
 </head>
 <body>
@@ -81,24 +54,38 @@ body {
   <span id="nav-title">Report an Issue</span>
 </nav>
 
-<div class="section-label">Report a charging issue</div>
-
-<div class="card">
-  <a href="https://docs.google.com/forms/d/e/1FAIpQLSdPUsJpqhjwgtRIx71y--g0s4PCLsV6kPQKVFDpxjapxUIApA/viewform?usp=publish-editor" target="_blank" rel="noopener" class="choice-row">
-    <span class="choice-icon" style="background:#E8EEF8;">📋</span>
-    <span class="choice-text">
-      <div class="choice-title">Report a charging issue</div>
-      <div class="choice-desc">Station down, billing problem, no tax on receipt, or other concern</div>
-    </span>
-    <span class="choice-chevron">›</span>
-  </a>
-</div>
-
-<div class="card">
-  <div class="note-card">
-    All reports are reviewed before appearing on the map. A photo, screenshot, or receipt helps us verify your report. Your email is optional and kept private.
+<div id="frame-wrap">
+  <iframe
+    id="civicspot-frame"
+    src="https://civicspot.io/maryland-ev-chargers/"
+    title="CivicSpot Maryland EV Charger Issues"
+    allowfullscreen
+    loading="lazy">
+  </iframe>
+  <div id="frame-fallback">
+    <p>This content could not be displayed inline.</p>
+    <p style="margin-top:10px;"><a href="https://civicspot.io/maryland-ev-chargers/" target="_blank" rel="noopener">Open in a new tab &#8599;</a></p>
   </div>
 </div>
 
+<script>
+// If iframe fails to load, show fallback link
+var frame = document.getElementById('civicspot-frame');
+frame.addEventListener('error', function() {
+  frame.style.display = 'none';
+  document.getElementById('frame-fallback').style.display = 'block';
+});
+// Timeout fallback in case error event doesn't fire
+setTimeout(function() {
+  try {
+    if (!frame.contentDocument && !frame.contentWindow.document) {
+      frame.style.display = 'none';
+      document.getElementById('frame-fallback').style.display = 'block';
+    }
+  } catch(e) {
+    // Cross-origin block — iframe may still be loading, leave it
+  }
+}, 5000);
+</script>
 </body>
 </html>

@@ -210,71 +210,72 @@ body {
 
 <header id="site-header">
   <div id="site-name">Charger<span>Watch</span>.org</div>
-  <div id="site-tagline">The receipts on Maryland's public EV charging</div>
+  <div id="site-tagline">Data driven accountability for public EV charging</div>
 </header>
 
 <div class="card" id="main-menu">
 
-  <!-- Submit -->
-  <a href="submit.html" class="menu-row" id="row-submit">
+  <!-- Report an Issue -->
+  <a href="https://civicspot.io/maryland-ev-chargers/" target="_blank" rel="noopener" class="menu-row">
     <span class="menu-icon icon-submit">📋</span>
-    <span class="menu-label">Tell ChargerWatch</span>
+    <span class="menu-label">Report an Issue</span>
     <span class="menu-chevron">›</span>
   </a>
 
-  <!-- Issues -->
-  <a href="cases.html" class="menu-row" id="row-issues">
-    <span class="menu-icon icon-issues">⚖️</span>
-    <span class="menu-label">Active Cases</span>
+  <!-- Browse Issues -->
+  <a href="https://civicspot.io/maryland-ev-chargers/" target="_blank" rel="noopener" class="menu-row">
+    <span class="menu-icon icon-issues">🔍</span>
+    <span class="menu-label">Browse Issues</span>
     <span class="menu-chevron">›</span>
   </a>
 
-  <!-- Stats -->
-  <a href="stats.html" class="menu-row" id="row-stats">
-    <span class="menu-icon icon-stats">📊</span>
-    <span class="menu-label">Stats</span>
-    <span class="menu-chevron">›</span>
-  </a>
-
-  <!-- Map -->
-  <a href="map.html" class="menu-row" id="row-map">
+  <!-- Charger Map -->
+  <a href="map.html" class="menu-row">
     <span class="menu-icon icon-map">📍</span>
-    <span class="menu-label">Map</span>
+    <span class="menu-label">Charger Map</span>
     <span class="menu-chevron">›</span>
   </a>
 
-  <!-- More (expands inline) -->
-  <div class="menu-row" id="row-more" role="button" aria-expanded="false" tabindex="0" style="border-bottom:none;">
-    <span class="menu-icon icon-more">•••</span>
-    <span class="menu-label">More</span>
-    <span class="menu-chevron" id="more-chevron">›</span>
+  <!-- Charger Stats -->
+  <a href="stats.html" class="menu-row">
+    <span class="menu-icon icon-stats">📊</span>
+    <span class="menu-label">Charger Stats</span>
+    <span class="menu-chevron">›</span>
+  </a>
+
+  <!-- About (expands inline) -->
+  <div class="menu-row" id="row-about" role="button" aria-expanded="false" tabindex="0">
+    <span class="menu-icon icon-more">ℹ️</span>
+    <span class="menu-label">About</span>
+    <span class="menu-chevron" id="about-top-chevron">›</span>
   </div>
+
+  <!-- Contact -->
+  <a href="https://docs.google.com/forms/d/e/1FAIpQLSdeBMZNEH9VDmSy9W4IfYKkw7T5ih0DAgu5DSWevxFWTQUCpQ/viewform?usp=publish-editor" target="_blank" rel="noopener" class="menu-row" style="border-bottom:none;">
+    <span class="menu-icon icon-submit">✉️</span>
+    <span class="menu-label">Contact</span>
+    <span class="menu-chevron">›</span>
+  </a>
+
+</div>
+
+<!-- About expand panel -->
+<div class="card" id="about-top-panel" style="display:none;">
+  <div style="padding:16px;">
+    <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;margin-bottom:10px;">Maryland promised reliable, accurately metered, and fairly taxed public EV charging. We track whether that promise is being kept.</p>
+    <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;margin-bottom:10px;"><a href="https://chargerwatch.org/" style="color:var(--blue);">ChargerWatch.org</a> delivers independent data on charger reliability, compliance, prices and taxes - collected by EV drivers who actually use these stations every day.</p>
+    <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;margin-bottom:10px;">A project of the EV Charging Task Force (EVCTF), a volunteer group of Maryland EV drivers. Published in partnership with <a href="https://pluginsites.org/" style="color:var(--blue);" target="_blank" rel="noopener">PlugInSites.org</a>.</p>
+    <a href="methodology.html" style="font-size:14px;color:var(--blue);text-decoration:none;">Methodology ›</a>
+  </div>
+</div>
 
 </div>
 
 
 
 <!-- More expand panel -->
-<div class="card" id="more-panel" style="display:none;">
-  <div class="expand-panel open">
-    <div class="about-links">
-      <div class="about-link about-expandable" id="about-toggle" role="button" tabindex="0">
-        About <span id="about-chevron">›</span>
-      </div>
-      <div id="about-content" style="display:none; padding: 12px 0 4px; border-top: 1px solid var(--rule); margin-top: 4px;">
-            <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;margin-bottom:10px;"><a href="https://chargerwatch.org" style="color:var(--blue);">ChargerWatch.org</a> delivers the receipts: independent data on charger reliability, compliance, prices and taxes - collected by EV drivers who actually use these stations every day.</p>
-        <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;">A project of the EV Charging Task Force (EVCTF), a volunteer group of Maryland EV drivers. Published in partnership with <a href="https://pluginsites.org/" style="color:var(--blue);" target="_blank" rel="noopener">PlugInSites.org</a>.</p>
-      </div>
-      <a href="methodology.html" class="about-link">Methodology <span>›</span></a>
-      <a href="mailto:lanny@pluginsites.org" class="about-link">Contact us <span>›</span></a>
-    </div>
-  </div>
-</div>
 
 
-<div style="background: var(--bg-card); border: 2px solid var(--amber); margin: 0 16px 12px; border-radius: var(--radius); padding: 16px 18px;">
-  <p style="font-size: 16px; font-weight: 400; line-height: 1.6; color: var(--ink); letter-spacing: -0.1px;">Data driven accountability for EV charging.</p>
-</div>
 
 <div class="section-label">Maryland Public Fast Chargers</div>
 
@@ -297,7 +298,7 @@ body {
 <div class="card">
   <div style="padding: 16px;">
     <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;margin-bottom:10px;">Maryland promised reliable, accurately metered, and fairly taxed public EV charging. We track whether that promise is being kept.</p>
-    <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;margin-bottom:10px;"><a href="https://chargerwatch.org" style="color:var(--blue);">ChargerWatch.org</a> delivers the receipts: independent data on charger reliability, compliance, prices and taxes - collected by EV drivers who actually use these stations every day.</p>
+    <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;margin-bottom:10px;"><a href="https://chargerwatch.org" style="color:var(--blue);">ChargerWatch.org</a> delivers independent data on charger reliability, compliance, prices and taxes - collected by EV drivers who actually use these stations every day.</p>
     <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;">A project of the EV Charging Task Force (EVCTF), a volunteer group of Maryland EV drivers. Published in partnership with <a href="https://pluginsites.org/" style="color:var(--blue);" target="_blank" rel="noopener">PlugInSites.org</a>.</p>
   </div>
 </div>
@@ -308,7 +309,21 @@ body {
 </footer>
 
 <script>
-// ── More toggle ──
+// ── About toggle ──
+var aboutTopOpen = false;
+var aboutTopPanel = document.getElementById('about-top-panel');
+var aboutTopRow = document.getElementById('row-about');
+if (aboutTopRow) {
+  aboutTopRow.addEventListener('click', function() {
+    aboutTopOpen = !aboutTopOpen;
+    aboutTopPanel.style.display = aboutTopOpen ? 'block' : 'none';
+    document.getElementById('about-top-chevron').style.transform = aboutTopOpen ? 'rotate(90deg)' : '';
+    document.getElementById('about-top-chevron').style.transition = 'transform 0.2s';
+    this.setAttribute('aria-expanded', aboutTopOpen);
+  });
+}
+
+// ── More toggle (kept for compatibility) ──
 var moreOpen = false;
 
 function toggleMore() {
