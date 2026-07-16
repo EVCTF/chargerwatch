@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>ChargerWatch.org</title>
+<meta name="description" content="A citizen-led initiative that records and publishes independent data on public EV charging in Maryland. A project of the EV Charging Task Force.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:        #F2F2F7;
+  --bg-card:   #FFFFFF;
+  --ink:       #1C1C1E;
+  --ink-mid:   #3A3A3C;
+  --ink-light: #8E8E93;
+  --rule:      #E5E5EA;
+  --blue:      #2551C0;
+  --blue-lt:   #E8EEF8;
+  --radius:    12px;
+  --radius-sm: 8px;
+  --shadow:    0 1px 3px rgba(0,0,0,0.08);
+  --menu-max:  600px;
+}
+html { background: var(--bg); }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+}
+
+/* ── Hero image strip ── */
+#hero-strip {
+  width: 100%;
+  height: 45vh;
+  min-height: 260px;
+  max-height: 520px;
+  background-image: url('CWhome1.jpeg');
+  background-size: cover;
+  background-position: center center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.48);
+}
+#hero-text {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 0 24px;
+}
+#hero-text h1 {
+  font-size: clamp(28px, 6vw, 52px);
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+#hero-text h1 span { color: #F5C842; }
+#hero-text p {
+  font-size: clamp(13px, 2vw, 18px);
+  color: rgba(255,255,255,0.88);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+/* ── Content wrapper (centered, constrained) ── */
+#content {
+  max-width: var(--menu-max);
+  margin: 0 auto;
+  padding: 0 0 40px;
+}
+
+/* ── Section label ── */
+.section-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-light);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 20px 20px 8px;
+}
+
+/* ── Menu card ── */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  margin: 0 16px 12px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+/* Single column by default */
+#menu-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.menu-row {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--ink);
+  gap: 14px;
+  transition: background 0.1s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.menu-row:last-child { border-bottom: none; }
+.menu-row:active { background: var(--bg); }
+
+/* In two-column grid, handle borders carefully */
+@media (min-width: 540px) {
+  #menu-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .menu-row {
+    border-bottom: 1px solid var(--rule);
+    border-right: 1px solid var(--rule);
+  }
+  /* Right column items: no right border */
+  .menu-row:nth-child(even) { border-right: none; }
+  /* Last row: no bottom border */
+  .menu-row:nth-last-child(-n+2) { border-bottom: none; }
+  /* If odd number of items, last item spans or loses bottom too */
+  .menu-row:last-child { border-bottom: none; border-right: none; }
+}
+
+.menu-icon {
+  width: 32px; height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; flex-shrink: 0;
+  background: var(--blue-lt);
+}
+.menu-label { flex: 1; font-size: 17px; font-weight: 500; letter-spacing: -0.2px; }
+.menu-chevron { color: var(--ink-light); font-size: 14px; flex-shrink: 0; }
+
+/* ── Mission card ── */
+#mission-card {
+  background: var(--bg-card);
+  border: 2px solid var(--blue);
+  border-radius: var(--radius);
+  margin: 0 16px 12px;
+  padding: 16px 18px;
+}
+#mission-card p {
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.65;
+  color: var(--ink);
+}
+
+/* ── Map CTA strip ── */
+#map-strip {
+  width: 100%;
+  height: 220px;
+  background-image: url('CWhome2.jpeg');
+  background-size: cover;
+  background-position: center 40%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0;
+}
+#map-strip-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.50);
+}
+#map-strip-text {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 0 24px;
+}
+#map-strip-text a {
+  display: inline-block;
+  font-size: clamp(18px, 4vw, 28px);
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  letter-spacing: -0.3px;
+  border-bottom: 2px solid rgba(255,255,255,0.5);
+  padding-bottom: 4px;
+  transition: border-color 0.2s;
+}
+#map-strip-text a:hover { border-color: #fff; }
+#map-strip-text p {
+  font-size: 13px;
+  color: rgba(255,255,255,0.75);
+  margin-top: 8px;
+}
+
+/* ── Footer ── */
+#site-footer {
+  text-align: center;
+  padding: 16px 20px 24px;
+  font-size: 11px;
+  color: var(--ink-light);
+  line-height: 1.8;
+  max-width: var(--menu-max);
+  margin: 0 auto;
+}
+
+/* ── Desktop: wider feel ── */
+@media (min-width: 700px) {
+  #hero-text h1 { letter-spacing: -2px; }
+  #map-strip { height: 280px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Hero image strip -->
+<div id="hero-strip">
+  <div id="hero-overlay"></div>
+  <div id="hero-text">
+    <h1>Charger<span>Watch</span></h1>
+    <p>Data driven accountability for public EV charging</p>
+  </div>
+</div>
+
+<!-- Constrained content -->
+<div id="content">
+
+  <div class="section-label">Menu</div>
+
+  <div class="card">
+    <div id="menu-grid">
+
+      <a href="map.html" class="menu-row">
+        <span class="menu-icon">📍</span>
+        <span class="menu-label">Charger Map</span>
+        <span class="menu-chevron">›</span>
+      </a>
+
+      <a href="stats.html" class="menu-row">
+        <span class="menu-icon">📊</span>
+        <span class="menu-label">Charger Stats</span>
+        <span class="menu-chevron">›</span>
+      </a>
+
+      <a href="https://civicspot.io/maryland-ev-chargers/" target="_blank" rel="noopener" class="menu-row">
+        <span class="menu-icon">📋</span>
+        <span class="menu-label">Report an Issue</span>
+        <span class="menu-chevron">›</span>
+      </a>
+
+      <a href="cases.html" class="menu-row">
+        <span class="menu-icon">🔍</span>
+        <span class="menu-label">Browse Issues</span>
+        <span class="menu-chevron">›</span>
+      </a>
+
+      <a href="about.html" class="menu-row">
+        <span class="menu-icon">ℹ️</span>
+        <span class="menu-label">About</span>
+        <span class="menu-chevron">›</span>
+      </a>
+
+      <a href="contact.html" class="menu-row">
+        <span class="menu-icon">✉️</span>
+        <span class="menu-label">Contact</span>
+        <span class="menu-chevron">›</span>
+      </a>
+
+    </div>
+  </div>
+
+  <div class="section-label">Our Mission</div>
+
+  <div id="mission-card">
+    <p>ChargerWatch is a citizen-led initiative delivering independent, transparent data on public EV charging stations across Maryland.</p>
+  </div>
+
+</div>
+
+<!-- Map CTA strip (full width) -->
+<div id="map-strip">
+  <div id="map-strip-overlay"></div>
+  <div id="map-strip-text">
+    <a href="map.html">Explore the Map &rarr;</a>
+    <p>350 public DCFC sites tracked across Maryland</p>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer id="site-footer">
+  <p>A project of the EV Charging Task Force.</p>
+  <p>Map tiles &copy; OpenStreetMap contributors &middot; Boundary data &copy; US Census Bureau</p>
+</footer>
+
+</body>
+</html>
