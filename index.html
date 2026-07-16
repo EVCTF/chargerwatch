@@ -67,7 +67,7 @@ body {
   line-height: 1.1;
   margin-bottom: 10px;
 }
-#hero-text h1 span { color: #5B8DEF; }
+#hero-text h1 span { color: #2551C0; text-shadow: 0 0 8px rgba(255,255,255,0.8), 0 0 2px rgba(255,255,255,0.9); }
 #hero-text p {
   font-size: clamp(13px, 2vw, 18px);
   color: rgba(255,255,255,0.88);
@@ -168,7 +168,8 @@ body {
 /* ── Map CTA strip ── */
 #map-strip {
   width: 100%;
-  height: 220px;
+  height: 20vh;
+  min-height: 120px;
   background-image: url('CWhome4.png');
   background-size: cover;
   background-position: center center;
@@ -221,7 +222,7 @@ body {
 /* ── Desktop: wider feel ── */
 @media (min-width: 700px) {
   #hero-text h1 { letter-spacing: -2px; }
-  #map-strip { height: 280px; }
+  #map-strip { height: 28vh; }
 }
 </style>
 </head>
