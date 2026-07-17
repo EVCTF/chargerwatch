@@ -361,7 +361,7 @@ body {
   function makeIcon(color) {
     var col = color || BLUE;
     var w = 12, h = 20;
-    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="0 0 12 20">'
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="0 0 12 20" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,0.4));position:relative;z-index:1000;">'
       + '<path d="M6 0C2.686 0 0 2.686 0 6c0 4.418 6 14 6 14s6-9.582 6-14C12 2.686 9.314 0 6 0z" fill="'+col+'"/>'
       + '<circle cx="6" cy="6" r="2.5" fill="rgba(255,255,255,0.7)"/>'
       + '</svg>';
@@ -382,13 +382,24 @@ body {
     nameEl.innerHTML = '<span id="d-name-link" title="Click to zoom to this station">' + s.name + '</span>';
     document.getElementById('d-name-link').addEventListener('click', function() {
       if (lastZoomedSerial === s.serial && map.getZoom() >= 17) {
-        // Already zoomed in on this station — zoom out
-        map.setView([s.lat, s.lng], 13, { animate: true });
+        map.flyTo([s.lat, s.lng], 13);
         lastZoomedSerial = null;
       } else {
-        // Zoom in to maximum
-        map.setView([s.lat, s.lng], 18, { animate: true });
+        map.flyTo([s.lat, s.lng], 18);
         lastZoomedSerial = s.serial;
+        // Refresh cluster after animation completes so pin is visible
+        map.once('moveend', function() {
+          clusterGroup.refreshClusters();
+          // Find and open the marker's cluster parent to show the pin
+          markerObjs.forEach(function(obj) {
+            if (obj.station.serial === s.serial) {
+              var parent = clusterGroup.getVisibleParent(obj.marker);
+              if (parent && parent !== obj.marker) {
+                clusterGroup.zoomToShowLayer(obj.marker, function() {});
+              }
+            }
+          });
+        });
       }
     });
     var metaLine1 = '<strong>' + s.network + '</strong> &middot; ' + s.city +
