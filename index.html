@@ -88,7 +88,7 @@ body {
 #content {
   max-width: var(--menu-max);
   margin: 0 auto;
-  padding: 0 0 40px;
+  padding: 0 0 0;
 }
 
 /* ── Section label ── */
@@ -109,6 +109,7 @@ body {
   box-shadow: var(--shadow);
   overflow: hidden;
 }
+#main-menu { margin-bottom: 2px; }
 
 /* Single column by default */
 #menu-grid {
@@ -231,7 +232,7 @@ body {
 /* ── Desktop: wider feel ── */
 @media (min-width: 700px) {
   #hero-text h1 { letter-spacing: -2px; }
-  #map-strip { height: 28vh; }
+  #map-strip { height: 24vh; }
 }
 </style>
 </head>
@@ -293,9 +294,9 @@ body {
     </div>
   </div>
 
-</div>
+  <p style="font-size: 14px; color: var(--ink-light); text-align: center; padding: 2px 24px 8px; line-height: 1.6;">ChargerWatch is a citizen-led project to monitor the reliability and regulatory compliance of Maryland's public EV charging stations.</p>
 
-<p style="font-size: 14px; color: var(--ink-light); text-align: center; padding: 8px 24px; line-height: 1.6; max-width: 600px; margin: 0 auto;">ChargerWatch is a citizen-led project to monitor the reliability and regulatory compliance of Maryland's public EV charging stations.</p>
+</div>
 
 <!-- Map CTA strip (full width) -->
 <div id="map-strip">

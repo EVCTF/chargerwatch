@@ -187,6 +187,8 @@ body {
   display: none;
 }
 #detail-panel h3 { font-size: 17px; font-weight: 600; line-height: 1.4; padding-right: 24px; margin-bottom: 6px; }
+#d-name-link { cursor: pointer; color: inherit; text-decoration: none; display: block; }
+#d-name-link:hover { opacity: 0.75; }
 .detail-meta { font-size: 13px; color: var(--ink-light); margin-bottom: 10px; line-height: 1.5; }
 .detail-actions { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .btn-plugshare { font-size: 12px; color: var(--blue); text-decoration: none; }
@@ -375,7 +377,12 @@ body {
 
   // ── Detail ──
   function showDetail(s) {
-    document.getElementById('d-name').textContent = s.name;
+    var nameEl = document.getElementById('d-name');
+    nameEl.innerHTML = '<span id="d-name-link" title="Click to zoom to this station">' + s.name + '</span>';
+    document.getElementById('d-name-link').addEventListener('click', function() {
+      map.setView([s.lat, s.lng], 15, { animate: true });
+      // Remove from cluster and show directly at high zoom
+    });
     var metaLine1 = '<strong>' + s.network + '</strong> &middot; ' + s.city +
       (s.county ? ' &middot; ' + s.county + ' Co.' : '');
     var metaLine2 = (s.kw ? s.kw + ' kW' : '') +
