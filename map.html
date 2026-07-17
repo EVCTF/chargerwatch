@@ -6,6 +6,24 @@
 <title>Charger Map &mdash; ChargerWatch.org</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" />
+<style>
+/* Cluster styling to match ChargerWatch blue */
+.marker-cluster-small,
+.marker-cluster-medium,
+.marker-cluster-large {
+  background-color: rgba(37,81,192,0.25) !important;
+}
+.marker-cluster-small div,
+.marker-cluster-medium div,
+.marker-cluster-large div {
+  background-color: rgba(37,81,192,0.7) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+}
+</style>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -245,6 +263,7 @@ body {
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script>
 (function() {
@@ -258,6 +277,7 @@ body {
   var activeNetworks = {};
   var allActive = true;
   var allStations = [], markerObjs = [];
+  var clusterGroup;
   var issueMarkers = [];
   var networkPortCounts = {};
 
@@ -280,6 +300,16 @@ body {
     maxBounds: [[37.6, -80.0], [39.85, -74.8]],
     maxBoundsViscosity: 0.85
   });
+
+  // Marker cluster group
+  clusterGroup = L.markerClusterGroup({
+    maxClusterRadius: 40,
+    spiderfyOnMaxZoom: true,
+    showCoverageOnHover: false,
+    zoomToBoundsOnClick: true,
+    disableClusteringAtZoom: 14
+  });
+  map.addLayer(clusterGroup);
 
   // Scroll overlay
   var overlay = document.getElementById('map-scroll-overlay');
@@ -327,14 +357,20 @@ body {
   // ── Icons ──
   function makeIcon(color) {
     var col = color || BLUE;
-    var sz = 11;
-    var h = '<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:transparent;border:2px solid '+col+';box-sizing:border-box;"></div>';
-    return L.divIcon({ html: h, className: '', iconSize: [sz, sz], iconAnchor: [sz/2, sz/2] });
+    var w = 12, h = 20;
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="0 0 12 20">'
+      + '<path d="M6 0C2.686 0 0 2.686 0 6c0 4.418 6 14 6 14s6-9.582 6-14C12 2.686 9.314 0 6 0z" fill="'+col+'"/>'
+      + '<circle cx="6" cy="6" r="2.5" fill="rgba(255,255,255,0.7)"/>'
+      + '</svg>';
+    return L.divIcon({ html: svg, className: '', iconSize: [w, h], iconAnchor: [w/2, h] });
   }
   function makeIssueIcon() {
-    var sz = 13;
-    var h = '<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:transparent;border:2.5px solid '+ISSUE_COLOR+';box-sizing:border-box;"></div>';
-    return L.divIcon({ html: h, className: '', iconSize: [sz, sz], iconAnchor: [sz/2, sz/2] });
+    var w = 12, h = 20;
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="0 0 12 20">'
+      + '<path d="M6 0C2.686 0 0 2.686 0 6c0 4.418 6 14 6 14s6-9.582 6-14C12 2.686 9.314 0 6 0z" fill="'+ISSUE_COLOR+'"/>'
+      + '<circle cx="6" cy="6" r="2.5" fill="rgba(255,255,255,0.7)"/>'
+      + '</svg>';
+    return L.divIcon({ html: svg, className: '', iconSize: [w, h], iconAnchor: [w/2, h] });
   }
 
   // ── Detail ──
@@ -380,14 +416,14 @@ body {
   // ── Filters ──
   function applyFilters() {
     var visible = [];
+    clusterGroup.clearLayers();
     markerObjs.forEach(function(obj) {
       var s = obj.station;
       var show = activeNetworks[s.network] !== false
         && stationMatchesKw(s)
         && (includeDealerships || s.facility_type !== 'CAR_DEALER')
         && (includeRestricted  || s.access !== 'PRIVATE');
-      if (show) { if (!map.hasLayer(obj.marker)) obj.marker.addTo(map); visible.push(s); }
-      else { if (map.hasLayer(obj.marker)) map.removeLayer(obj.marker); }
+      if (show) { clusterGroup.addLayer(obj.marker); visible.push(s); }
     });
     updateStats(visible);
     document.getElementById('detail-panel').style.display = 'none';
@@ -729,7 +765,7 @@ body {
       var color = s.access === 'PRIVATE' ? GREY : BLUE;
       var mk = L.marker([s.lat, s.lng], { icon: makeIcon(color) });
       mk.on('click', function() { showDetail(s); });
-      if (s.access !== 'PRIVATE') mk.addTo(map);
+      if (s.access !== 'PRIVATE') clusterGroup.addLayer(mk);
       markerObjs.push({ marker: mk, station: s });
     });
 
