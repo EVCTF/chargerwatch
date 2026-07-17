@@ -348,10 +348,10 @@ body {
     nameEl.innerHTML = '<span id="d-name-link" title="Click to zoom to this station">' + s.name + '</span>';
     document.getElementById('d-name-link').addEventListener('click', function() {
       if (lastZoomedSerial === s.serial && map.getZoom() >= 17) {
-        map.flyTo([s.lat, s.lng], 13);
+        map.flyTo([s.lat, s.lng], 13, { animate: true, duration: 0.5 });
         lastZoomedSerial = null;
       } else {
-        map.flyTo([s.lat, s.lng], 18);
+        map.flyTo([s.lat, s.lng], 18, { animate: true, duration: 0.5 });
         lastZoomedSerial = s.serial;
         // Refresh cluster after animation completes so pin is visible
         map.once('moveend', function() {
