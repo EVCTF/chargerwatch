@@ -239,11 +239,11 @@ body {
   <div id="map-legend">
     <h5>ChargerWatch</h5>
     <div class="leg-row">
-      <span class="leg-dot" style="background:transparent;border:2px solid #2551C0;width:10px;height:10px;"></span>
-      Public
+      <svg xmlns="http://www.w3.org/2000/svg" width="9" height="15" viewBox="0 0 12 20" style="flex-shrink:0;margin-right:2px;"><path d="M6 0C2.686 0 0 2.686 0 6c0 4.418 6 14 6 14s6-9.582 6-14C12 2.686 9.314 0 6 0z" fill="#2551C0"/><circle cx="6" cy="6" r="2.5" fill="rgba(255,255,255,0.7)"/></svg>
+      Public DCFC
     </div>
     <div class="leg-row">
-      <span class="leg-dot" style="background:transparent;border:2px solid #8E8E93;width:10px;height:10px;"></span>
+      <svg xmlns="http://www.w3.org/2000/svg" width="9" height="15" viewBox="0 0 12 20" style="flex-shrink:0;margin-right:2px;"><path d="M6 0C2.686 0 0 2.686 0 6c0 4.418 6 14 6 14s6-9.582 6-14C12 2.686 9.314 0 6 0z" fill="#8E8E93"/><circle cx="6" cy="6" r="2.5" fill="rgba(255,255,255,0.7)"/></svg>
       Restricted
     </div>
   </div>
@@ -280,6 +280,7 @@ body {
   var allActive = true;
   var allStations = [], markerObjs = [];
   var clusterGroup;
+  var lastZoomedSerial = null;
   var issueMarkers = [];
   var networkPortCounts = {};
 
@@ -380,8 +381,15 @@ body {
     var nameEl = document.getElementById('d-name');
     nameEl.innerHTML = '<span id="d-name-link" title="Click to zoom to this station">' + s.name + '</span>';
     document.getElementById('d-name-link').addEventListener('click', function() {
-      map.setView([s.lat, s.lng], 15, { animate: true });
-      // Remove from cluster and show directly at high zoom
+      if (lastZoomedSerial === s.serial && map.getZoom() >= 15) {
+        // Already zoomed in on this station — zoom out
+        map.setView([s.lat, s.lng], 13, { animate: true });
+        lastZoomedSerial = null;
+      } else {
+        // Zoom in to maximum
+        map.setView([s.lat, s.lng], 17, { animate: true });
+        lastZoomedSerial = s.serial;
+      }
     });
     var metaLine1 = '<strong>' + s.network + '</strong> &middot; ' + s.city +
       (s.county ? ' &middot; ' + s.county + ' Co.' : '');
