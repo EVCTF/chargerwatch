@@ -299,7 +299,7 @@ body {
   };
 
   var map = L.map('map', {
-    scrollWheelZoom: false, minZoom: 7, maxZoom: 17,
+    scrollWheelZoom: false, minZoom: 7, maxZoom: 19,
     maxBounds: [[37.6, -80.0], [39.85, -74.8]],
     maxBoundsViscosity: 0.85
   });
@@ -381,13 +381,13 @@ body {
     var nameEl = document.getElementById('d-name');
     nameEl.innerHTML = '<span id="d-name-link" title="Click to zoom to this station">' + s.name + '</span>';
     document.getElementById('d-name-link').addEventListener('click', function() {
-      if (lastZoomedSerial === s.serial && map.getZoom() >= 15) {
+      if (lastZoomedSerial === s.serial && map.getZoom() >= 17) {
         // Already zoomed in on this station — zoom out
         map.setView([s.lat, s.lng], 13, { animate: true });
         lastZoomedSerial = null;
       } else {
         // Zoom in to maximum
-        map.setView([s.lat, s.lng], 17, { animate: true });
+        map.setView([s.lat, s.lng], 19, { animate: true });
         lastZoomedSerial = s.serial;
       }
     });
