@@ -131,20 +131,6 @@ body {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Scroll overlay ── */
-#map-scroll-overlay {
-  position: absolute; inset: 0; z-index: 450;
-  display: flex; align-items: center; justify-content: center;
-  background: transparent; cursor: pointer;
-}
-#map-scroll-overlay span {
-  background: rgba(0,0,0,0.55); color: #fff;
-  font-size: 13px; padding: 8px 16px; border-radius: 20px;
-  pointer-events: none; opacity: 0; transition: opacity 0.3s;
-}
-#map-scroll-overlay:hover span,
-#map-scroll-overlay.hint span { opacity: 1; }
-#map-scroll-overlay.dismissed { display: none; }
 
 /* ── Legend ── */
 #map-legend {
@@ -157,7 +143,6 @@ body {
   letter-spacing: 0.06em; color: var(--ink-light); margin-bottom: 6px;
 }
 .leg-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; color: var(--ink-mid); }
-.leg-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
 
 /* ── Stats panel ── */
 #stats-panel {
@@ -228,9 +213,6 @@ body {
 <div id="map-wrap">
   <div id="map" role="application" aria-label="Maryland DCFC station map"></div>
 
-  <div id="map-scroll-overlay" aria-hidden="true">
-    <span>Click to interact with map</span>
-  </div>
 
   <div id="map-loading" aria-live="polite">
     <div class="spinner"></div>Loading stations&hellip;
@@ -299,7 +281,7 @@ body {
   };
 
   var map = L.map('map', {
-    scrollWheelZoom: false, minZoom: 7, maxZoom: 19,
+    scrollWheelZoom: true, minZoom: 7, maxZoom: 19,
     maxBounds: [[37.6, -80.0], [39.85, -74.8]],
     maxBoundsViscosity: 0.85
   });
@@ -314,22 +296,6 @@ body {
   });
   map.addLayer(clusterGroup);
 
-  // Scroll overlay
-  var overlay = document.getElementById('map-scroll-overlay');
-  overlay.addEventListener('click', function() {
-    map.scrollWheelZoom.enable();
-    overlay.classList.add('dismissed');
-  });
-  var hintTimer;
-  document.addEventListener('wheel', function(e) {
-    var rect = document.getElementById('map').getBoundingClientRect();
-    if (!overlay.classList.contains('dismissed') &&
-        e.clientY >= rect.top && e.clientY <= rect.bottom) {
-      overlay.classList.add('hint');
-      clearTimeout(hintTimer);
-      hintTimer = setTimeout(function() { overlay.classList.remove('hint'); }, 1800);
-    }
-  }, { passive: true });
 
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
