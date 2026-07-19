@@ -65,6 +65,17 @@ body {
 #nav-title { font-size: 17px; font-weight: 600; color: var(--ink); }
 
 /* ── Networks dropdown button ── */
+#satellite-btn {
+  font-size: 13px; font-weight: 500;
+  padding: 6px 12px; border-radius: 20px;
+  border: 1px solid var(--rule); background: var(--bg);
+  cursor: pointer; color: var(--ink-mid);
+  white-space: nowrap; -webkit-tap-highlight-color: transparent;
+  transition: all 0.15s;
+}
+#satellite-btn.active {
+  background: var(--ink); color: #fff; border-color: var(--ink);
+}
 #network-btn {
   font-size: 13px; font-weight: 500;
   padding: 6px 12px; border-radius: 20px;
@@ -200,9 +211,12 @@ body {
     <a href="/" id="nav-back">&#8249; Back</a>
     <span id="nav-title">Map</span>
   </div>
-  <button id="network-btn" aria-expanded="false" aria-haspopup="true">
-    Filters <span id="network-chevron">▾</span>
-  </button>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button id="satellite-btn" aria-pressed="false">Satellite</button>
+    <button id="network-btn" aria-expanded="false" aria-haspopup="true">
+      Filters <span id="network-chevron">▾</span>
+    </button>
+  </div>
 </div>
 
 <!-- Floating network dropdown -->
@@ -297,10 +311,34 @@ body {
   map.addLayer(clusterGroup);
 
 
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  var streetLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19
-  }).addTo(map);
+  });
+
+  var satelliteLayer = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID, IGN',
+    maxZoom: 19
+  });
+
+  streetLayer.addTo(map);
+  var satelliteActive = false;
+
+  document.getElementById('satellite-btn').addEventListener('click', function() {
+    satelliteActive = !satelliteActive;
+    if (satelliteActive) {
+      map.removeLayer(streetLayer);
+      satelliteLayer.addTo(map);
+      this.classList.add('active');
+      this.setAttribute('aria-pressed', 'true');
+    } else {
+      map.removeLayer(satelliteLayer);
+      streetLayer.addTo(map);
+      this.classList.remove('active');
+      this.setAttribute('aria-pressed', 'false');
+    }
+  });
 
   // ── CSV ──
   function parseCSV(txt) {
