@@ -77,7 +77,7 @@ body {
 #style-dropdown {
   display: none;
   position: absolute;
-  top: 52px; left: 12px;
+  top: 90px; left: 12px;
   background: var(--bg-card);
   border: 1px solid var(--rule);
   border-radius: var(--radius);
@@ -241,8 +241,8 @@ body {
   <!-- Style dropdown -->
   <div id="style-dropdown">
     <div class="style-item active" data-style="osm">Street (Default)</div>
-    <div class="style-item" data-style="positron">Light (Positron)</div>
-    <div class="style-item" data-style="voyager">Voyager</div>
+    <div class="style-item" data-style="stadia">Stadia Smooth</div>
+    <div class="style-item" data-style="esristreet">ESRI Street</div>
     <div class="style-item" data-style="satellite">Satellite</div>
   </div>
 </div>
@@ -345,13 +345,13 @@ body {
       attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19
     }),
-    positron: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: 'abcd', maxZoom: 19
+    stadia: L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19
     }),
-    voyager: L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: 'abcd', maxZoom: 19
+    esristreet: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, HERE, DeLorme, USGS',
+      maxZoom: 19
     }),
     satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, GeoEye, Earthstar Geographics',
