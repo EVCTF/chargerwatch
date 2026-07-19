@@ -65,7 +65,7 @@ body {
 #nav-title { font-size: 17px; font-weight: 600; color: var(--ink); }
 
 /* ── Networks dropdown button ── */
-#satellite-btn {
+#style-btn {
   font-size: 13px; font-weight: 500;
   padding: 6px 12px; border-radius: 20px;
   border: 1px solid var(--rule); background: var(--bg);
@@ -73,9 +73,29 @@ body {
   white-space: nowrap; -webkit-tap-highlight-color: transparent;
   transition: all 0.15s;
 }
-#satellite-btn.active {
-  background: var(--ink); color: #fff; border-color: var(--ink);
+#style-btn.open { background: var(--blue-lt); color: var(--blue); border-color: var(--blue); }
+#style-dropdown {
+  display: none;
+  position: absolute;
+  top: 52px; left: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  z-index: 700;
+  min-width: 180px;
+  overflow: hidden;
 }
+#style-dropdown.open { display: block; }
+.style-item {
+  padding: 11px 14px;
+  font-size: 14px; color: var(--ink-mid);
+  cursor: pointer; border-bottom: 1px solid var(--rule);
+  -webkit-tap-highlight-color: transparent;
+}
+.style-item:last-child { border-bottom: none; }
+.style-item:active { background: var(--bg); }
+.style-item.active { color: var(--blue); font-weight: 600; }
 #network-btn {
   font-size: 13px; font-weight: 500;
   padding: 6px 12px; border-radius: 20px;
@@ -212,10 +232,18 @@ body {
     <span id="nav-title">Map</span>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
-    <button id="satellite-btn" aria-pressed="false">Satellite</button>
+    <button id="style-btn" aria-expanded="false">Map Style ▾</button>
     <button id="network-btn" aria-expanded="false" aria-haspopup="true">
       Filters <span id="network-chevron">▾</span>
     </button>
+  </div>
+
+  <!-- Style dropdown -->
+  <div id="style-dropdown">
+    <div class="style-item active" data-style="osm">Street (Default)</div>
+    <div class="style-item" data-style="positron">Light (Positron)</div>
+    <div class="style-item" data-style="voyager">Voyager</div>
+    <div class="style-item" data-style="satellite">Satellite</div>
   </div>
 </div>
 
@@ -311,33 +339,67 @@ body {
   map.addLayer(clusterGroup);
 
 
-  var streetLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    maxZoom: 19
+  // Tile layer definitions
+  var tileLayers = {
+    osm: L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
+    }),
+    positron: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd', maxZoom: 19
+    }),
+    voyager: L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd', maxZoom: 19
+    }),
+    satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, GeoEye, Earthstar Geographics',
+      maxZoom: 19
+    })
+  };
+
+  var currentLayer = tileLayers.osm;
+  currentLayer.addTo(map);
+
+  // Style switcher
+  var styleOpen = false;
+  var styleBtn = document.getElementById('style-btn');
+  var styleDropdown = document.getElementById('style-dropdown');
+
+  styleBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    styleOpen = !styleOpen;
+    styleDropdown.classList.toggle('open', styleOpen);
+    styleBtn.classList.toggle('open', styleOpen);
+    styleBtn.setAttribute('aria-expanded', styleOpen);
   });
 
-  var satelliteLayer = L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID, IGN',
-    maxZoom: 19
-  });
-
-  streetLayer.addTo(map);
-  var satelliteActive = false;
-
-  document.getElementById('satellite-btn').addEventListener('click', function() {
-    satelliteActive = !satelliteActive;
-    if (satelliteActive) {
-      map.removeLayer(streetLayer);
-      satelliteLayer.addTo(map);
-      this.classList.add('active');
-      this.setAttribute('aria-pressed', 'true');
-    } else {
-      map.removeLayer(satelliteLayer);
-      streetLayer.addTo(map);
-      this.classList.remove('active');
-      this.setAttribute('aria-pressed', 'false');
+  document.addEventListener('click', function(e) {
+    if (styleOpen && !styleDropdown.contains(e.target) && e.target !== styleBtn) {
+      styleOpen = false;
+      styleDropdown.classList.remove('open');
+      styleBtn.classList.remove('open');
+      styleBtn.setAttribute('aria-expanded', false);
     }
+  });
+
+  document.querySelectorAll('.style-item').forEach(function(item) {
+    item.addEventListener('click', function() {
+      var style = this.getAttribute('data-style');
+      map.removeLayer(currentLayer);
+      currentLayer = tileLayers[style];
+      currentLayer.addTo(map);
+      // Ensure pins stay on top
+      clusterGroup.bringToFront && clusterGroup.bringToFront();
+      document.querySelectorAll('.style-item').forEach(function(i) { i.classList.remove('active'); });
+      this.classList.add('active');
+      var label = this.textContent;
+      styleBtn.innerHTML = label + ' ▾';
+      styleOpen = false;
+      styleDropdown.classList.remove('open');
+      styleBtn.classList.remove('open');
+    });
   });
 
   // ── CSV ──
