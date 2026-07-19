@@ -65,7 +65,7 @@ body {
 #nav-title { font-size: 17px; font-weight: 600; color: var(--ink); }
 
 /* ── Networks dropdown button ── */
-#satellite-btn {
+#issues-toggle-btn, #satellite-btn {
   font-size: 13px; font-weight: 500;
   padding: 6px 12px; border-radius: 20px;
   border: 1px solid var(--rule); background: var(--bg);
@@ -74,6 +74,7 @@ body {
   transition: all 0.15s;
 }
 #satellite-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+#issues-toggle-btn.active { background: var(--red); color: #fff; border-color: var(--red); }
 #network-btn {
   font-size: 13px; font-weight: 500;
   padding: 6px 12px; border-radius: 20px;
@@ -210,6 +211,7 @@ body {
     <span id="nav-title">Map</span>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
+    <button id="issues-toggle-btn" aria-pressed="false">Issues</button>
     <button id="satellite-btn" aria-pressed="false">Satellite</button>
     <button id="network-btn" aria-expanded="false" aria-haspopup="true">
       Filters <span id="network-chevron">▾</span>
@@ -336,6 +338,18 @@ body {
       this.classList.remove('active');
       this.setAttribute('aria-pressed', 'false');
     }
+  });
+
+  // Issues toggle
+  var issuesVisible = false;
+  document.getElementById('issues-toggle-btn').addEventListener('click', function() {
+    issuesVisible = !issuesVisible;
+    issueMarkers.forEach(function(mk) {
+      if (issuesVisible) { mk.addTo(map); }
+      else { map.removeLayer(mk); }
+    });
+    this.classList.toggle('active', issuesVisible);
+    this.setAttribute('aria-pressed', issuesVisible);
   });
 
   // ── CSV ──
@@ -810,7 +824,7 @@ body {
         var mk = L.marker([lat, lng], { icon: makeIssueIcon() });
         mk.on('click', function() { showIssueDetail(iss); });
         issueMarkers.push(mk);
-        mk.addTo(map);
+        // Hidden by default — toggle via Issues button
       });
     }
 
