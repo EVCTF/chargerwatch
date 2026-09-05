@@ -185,7 +185,26 @@ body {
 #detail-panel h3 { font-size: 17px; font-weight: 600; line-height: 1.4; padding-right: 24px; margin-bottom: 6px; }
 #d-name-link { cursor: pointer; color: inherit; text-decoration: none; display: block; }
 #d-name-link:hover { opacity: 0.75; }
-.detail-meta { font-size: 13px; color: var(--ink-light); margin-bottom: 10px; line-height: 1.5; }
+.detail-meta { font-size: 13px; color: var(--ink-light); margin-bottom: 0; line-height: 1.5; }
+#d-body { display: flex; gap: 12px; align-items: flex-start; }
+#d-text { flex: 1; min-width: 0; }
+#d-thumb {
+  display: none; width: 72px; height: 72px; flex-shrink: 0;
+  object-fit: cover; border-radius: 8px; border: 1px solid var(--rule);
+  background: var(--bg); cursor: zoom-in;
+}
+#d-body.thumb-expanded { flex-direction: column; }
+#d-body.thumb-expanded #d-thumb {
+  width: 100%; height: auto; max-height: 40vh; cursor: zoom-out;
+}
+.detail-verified { font-size: 11px; color: var(--ink-light); margin-top: 6px; }
+.badge-restricted {
+  display: inline-block; font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  background: var(--bg); color: var(--ink-light);
+  border: 1px solid var(--rule); border-radius: 4px;
+  padding: 2px 6px; margin-left: 6px; vertical-align: middle;
+}
 .detail-actions { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .btn-plugshare { font-size: 12px; color: var(--blue); text-decoration: none; }
 #detail-close {
@@ -207,6 +226,7 @@ body {
     padding: 7px 10px; font-size: 11px; min-width: 0;
   }
   #stats-panel .stat-row { gap: 12px; }
+  #d-thumb { width: 80px; height: 80px; }
 }
 </style>
 </head>
@@ -262,7 +282,13 @@ body {
   <div id="detail-panel" role="region" aria-label="Station detail" aria-live="polite">
     <button id="detail-close" aria-label="Close">&#x2715;</button>
     <h3 id="d-name"></h3>
-    <div class="detail-meta" id="d-meta"></div>
+    <div id="d-body">
+      <img id="d-thumb" alt="" loading="lazy">
+      <div id="d-text">
+        <div class="detail-meta" id="d-meta"></div>
+        <div class="detail-verified" id="d-verified"></div>
+      </div>
+    </div>
     <div class="detail-actions" id="d-actions"></div>
   </div>
 </div>
@@ -388,6 +414,30 @@ body {
   }
 
   // ── Detail panel ──
+  function formatMonthYear(raw) {
+    if (!raw) return '';
+    var d = new Date(raw);
+    if (isNaN(d.getTime())) {
+      var m = raw.match(/^(\d{4})-(\d{2})/);
+      if (!m) return '';
+      d = new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, 1);
+      if (isNaN(d.getTime())) return '';
+    }
+    return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }
+
+  // Thumbnail: hide on load failure, tap to expand/collapse
+  (function() {
+    var thumb = document.getElementById('d-thumb');
+    thumb.addEventListener('error', function() {
+      this.style.display = 'none';
+      document.getElementById('d-body').classList.remove('thumb-expanded');
+    });
+    thumb.addEventListener('click', function() {
+      document.getElementById('d-body').classList.toggle('thumb-expanded');
+    });
+  })();
+
   function showDetail(s) {
     var nameEl = document.getElementById('d-name');
     nameEl.innerHTML = '<span id="d-name-link" title="Click to zoom to this station"></span>';
@@ -402,6 +452,13 @@ body {
       }
     });
 
+    if (s.access === 'PRIVATE') {
+      var badge = document.createElement('span');
+      badge.className = 'badge-restricted';
+      badge.textContent = 'Restricted';
+      nameEl.appendChild(badge);
+    }
+
     var line1 = '<strong>' + s.network + '</strong> &middot; ' + s.city +
       (s.county ? ' &middot; ' + s.county + ' Co.' : '');
     var line2 = (s.kw ? s.kw + ' kW' : '') +
@@ -409,6 +466,25 @@ body {
       (s.connectors ? s.connectors + ' port' + (s.connectors !== '1' ? 's' : '') : '');
     document.getElementById('d-meta').innerHTML =
       line1 + (line2 ? '<br><span style="color:var(--ink-mid);">' + line2 + '</span>' : '');
+
+    // Verified line
+    var vEl = document.getElementById('d-verified');
+    var vTxt = formatMonthYear(s.verified);
+    vEl.textContent = vTxt ? 'Verified ' + vTxt : '';
+    vEl.style.display = vTxt ? 'block' : 'none';
+
+    // Thumbnail
+    var body  = document.getElementById('d-body');
+    var thumb = document.getElementById('d-thumb');
+    body.classList.remove('thumb-expanded');
+    if (s.thumbnail) {
+      thumb.style.display = 'block';
+      thumb.alt = s.name;
+      thumb.src = s.thumbnail;
+    } else {
+      thumb.style.display = 'none';
+      thumb.removeAttribute('src');
+    }
 
     var ah = '';
     if (s.plugshare) {
@@ -419,6 +495,9 @@ body {
   }
 
   function showIssueDetail(issue) {
+    document.getElementById('d-thumb').style.display = 'none';
+    document.getElementById('d-verified').style.display = 'none';
+    document.getElementById('d-body').classList.remove('thumb-expanded');
     document.getElementById('d-name').textContent = issue.headline || issue.site_name || 'Issue';
     document.getElementById('d-meta').innerHTML =
       (issue.status ? '<strong>' + issue.status + '</strong>' : '') +
@@ -778,6 +857,8 @@ body {
         connectors: row.dcfc ? row.dcfc.trim() : '',
         plugshare:  row.plugshare_link ? row.plugshare_link.trim() : '',
         facility_type: row.facility_type ? row.facility_type.trim() : '',
+        thumbnail:  row.thumbnail ? row.thumbnail.trim() : '',
+        verified:   row.date_verified ? row.date_verified.trim() : '',
         access:     row.public ? row.public.trim().toUpperCase() : 'PUBLIC'
       };
     }).filter(function(s) { return !isNaN(s.lat) && !isNaN(s.lng); });
