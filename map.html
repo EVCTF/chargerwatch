@@ -253,9 +253,8 @@ body {
   </div>
 
   <div id="stats-panel">
-    <h5>Showing</h5>
+    <h5>Current view</h5>
     <div class="stat-row"><span>Sites</span><span class="stat-num" id="stat-visible">-</span></div>
-    <div class="stat-row"><span>of</span><span class="stat-num" id="stat-total">-</span></div>
     <div class="stat-row"><span>Ports</span><span class="stat-num" id="stat-ports">-</span></div>
   </div>
 
@@ -436,10 +435,7 @@ body {
   // ── Stats ──
   function updateStats(visible) {
     var ports = visible.reduce(function(n, s) { return n + (parseInt(s.connectors) || 0); }, 0);
-    var total = allStations.filter(function(s) { return s.access !== 'PRIVATE'; }).length;
-    var shown = visible.filter(function(s) { return s.access !== 'PRIVATE'; }).length;
-    document.getElementById('stat-visible').textContent = shown.toLocaleString();
-    document.getElementById('stat-total').textContent   = total.toLocaleString();
+    document.getElementById('stat-visible').textContent = visible.length.toLocaleString();
     document.getElementById('stat-ports').textContent   = ports.toLocaleString();
     document.getElementById('pin-count').textContent    = visible.length.toLocaleString() + ' sites';
   }
