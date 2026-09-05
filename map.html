@@ -63,9 +63,17 @@ body {
   font-weight: 500; white-space: nowrap;
 }
 #nav-title { font-size: 17px; font-weight: 600; color: var(--ink); }
+#locate-btn {
+  font-size: 16px; background: none; border: none;
+  color: var(--blue); cursor: pointer; padding: 2px 4px;
+  -webkit-tap-highlight-color: transparent;
+  line-height: 1;
+}
+#locate-btn.locating { opacity: 0.5; }
+#locate-btn.error { color: var(--red); }
 
 /* ── Networks dropdown button ── */
-#issues-toggle-btn, #satellite-btn {
+#satellite-btn {
   font-size: 13px; font-weight: 500;
   padding: 6px 12px; border-radius: 20px;
   border: 1px solid var(--rule); background: var(--bg);
@@ -74,7 +82,6 @@ body {
   transition: all 0.15s;
 }
 #satellite-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
-#issues-toggle-btn.active { background: var(--red); color: #fff; border-color: var(--red); }
 #network-btn {
   font-size: 13px; font-weight: 500;
   padding: 6px 12px; border-radius: 20px;
@@ -209,9 +216,9 @@ body {
   <div style="display:flex;align-items:center;gap:12px;">
     <a href="/" id="nav-back">&#8249; Back</a>
     <span id="nav-title">Map</span>
+    <button id="locate-btn" title="Find my location" aria-label="Find my location">&#9678;</button>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
-    <button id="issues-toggle-btn" aria-pressed="false">Issues</button>
     <button id="satellite-btn" aria-pressed="false">Satellite</button>
     <button id="network-btn" aria-expanded="false" aria-haspopup="true">
       Filters <span id="network-chevron">▾</span>
@@ -242,15 +249,13 @@ body {
       <svg xmlns="http://www.w3.org/2000/svg" width="9" height="15" viewBox="0 0 12 20" style="flex-shrink:0;margin-right:2px;"><path d="M6 0C2.686 0 0 2.686 0 6c0 4.418 6 14 6 14s6-9.582 6-14C12 2.686 9.314 0 6 0z" fill="#8E8E93"/><circle cx="6" cy="6" r="2.5" fill="rgba(255,255,255,0.7)"/></svg>
       Restricted
     </div>
-    <div class="leg-row">
-      <svg xmlns="http://www.w3.org/2000/svg" width="9" height="15" viewBox="0 0 12 20" style="flex-shrink:0;margin-right:2px;"><path d="M6 0C2.686 0 0 2.686 0 6c0 4.418 6 14 6 14s6-9.582 6-14C12 2.686 9.314 0 6 0z" fill="#993C1D"/><circle cx="6" cy="6" r="2.5" fill="rgba(255,255,255,0.7)"/></svg>
-      Issues
-    </div>
+
   </div>
 
   <div id="stats-panel">
-    <h5>Current view</h5>
+    <h5>Showing</h5>
     <div class="stat-row"><span>Sites</span><span class="stat-num" id="stat-visible">-</span></div>
+    <div class="stat-row"><span>of</span><span class="stat-num" id="stat-total">-</span></div>
     <div class="stat-row"><span>Ports</span><span class="stat-num" id="stat-ports">-</span></div>
   </div>
 
@@ -344,166 +349,6 @@ body {
     }
   });
 
-  // Issues toggle
-  var issuesVisible = false;
-  document.getElementById('issues-toggle-btn').addEventListener('click', function() {
-    issuesVisible = !issuesVisible;
-    issueMarkers.forEach(function(mk) {
-      if (issuesVisible) { mk.addTo(map); }
-      else { map.removeLayer(mk); }
-    });
-    this.classList.toggle('active', issuesVisible);
-    this.setAttribute('aria-pressed', issuesVisible);
-  });
-
-  // ── CSV ──
-  function parseCSV(txt) {
-    var lines = txt.trim().split('\n');
-    var hdrs = splitLine(lines[0]);
-    return lines.slice(1).map(function(l) {
-      var v = splitLine(l), o = {};
-      hdrs.forEach(function(h, i) { o[h.trim()] = (v[i] || '').trim(); });
-      return o;
-    });
-  }
-  function splitLine(l) {
-    var res = [], cur = '', q = false;
-    for (var i = 0; i < l.length; i++) {
-      var c = l[i];
-      if (c === '"') { q = !q; }
-      else if (c === ',' && !q) { res.push(cur); cur = ''; }
-      else { cur += c; }
-    }
-    res.push(cur); return res;
-  }
-
-  // ── Icons ──
-  function makeIcon(color) {
-    var col = color || BLUE;
-    var w = 12, h = 20;
-    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="0 0 12 20" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,0.4));position:relative;z-index:1000;">'
-      + '<path d="M6 0C2.686 0 0 2.686 0 6c0 4.418 6 14 6 14s6-9.582 6-14C12 2.686 9.314 0 6 0z" fill="'+col+'"/>'
-      + '<circle cx="6" cy="6" r="2.5" fill="rgba(255,255,255,0.7)"/>'
-      + '</svg>';
-    return L.divIcon({ html: svg, className: '', iconSize: [w, h], iconAnchor: [w/2, h] });
-  }
-  function makeIssueIcon() {
-    var w = 12, h = 20;
-    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="0 0 12 20">'
-      + '<path d="M6 0C2.686 0 0 2.686 0 6c0 4.418 6 14 6 14s6-9.582 6-14C12 2.686 9.314 0 6 0z" fill="'+ISSUE_COLOR+'"/>'
-      + '<circle cx="6" cy="6" r="2.5" fill="rgba(255,255,255,0.7)"/>'
-      + '</svg>';
-    return L.divIcon({ html: svg, className: '', iconSize: [w, h], iconAnchor: [w/2, h] });
-  }
-
-  // ── Detail ──
-  function showDetail(s) {
-    var nameEl = document.getElementById('d-name');
-    nameEl.innerHTML = '<span id="d-name-link" title="Click to zoom to this station">' + s.name + '</span>';
-    document.getElementById('d-name-link').addEventListener('click', function() {
-      if (lastZoomedSerial === s.serial && map.getZoom() >= 17) {
-        map.flyTo([s.lat, s.lng], 13, { animate: true, duration: 0.5 });
-        lastZoomedSerial = null;
-      } else {
-        map.flyTo([s.lat, s.lng], 18, { animate: true, duration: 0.5 });
-        lastZoomedSerial = s.serial;
-        // Refresh cluster after animation completes so pin is visible
-        map.once('moveend', function() {
-          clusterGroup.refreshClusters();
-          // Find and open the marker's cluster parent to show the pin
-          markerObjs.forEach(function(obj) {
-            if (obj.station.serial === s.serial) {
-              var parent = clusterGroup.getVisibleParent(obj.marker);
-              if (parent && parent !== obj.marker) {
-                clusterGroup.zoomToShowLayer(obj.marker, function() {});
-              }
-            }
-          });
-        });
-      }
-    });
-    var metaLine1 = '<strong>' + s.network + '</strong> &middot; ' + s.city +
-      (s.county ? ' &middot; ' + s.county + ' Co.' : '');
-    var metaLine2 = (s.kw ? s.kw + ' kW' : '') +
-      (s.kw && s.connectors ? ' &middot; ' : '') +
-      (s.connectors ? s.connectors + ' port' + (s.connectors !== '1' ? 's' : '') : '');
-    document.getElementById('d-meta').innerHTML =
-      metaLine1 +
-      (metaLine2 ? '<br><span style="color:var(--ink-mid);">' + metaLine2 + '</span>' : '');
-    var ah = '';
-    if (s.plugshare) {
-      ah += '<a href="' + s.plugshare + '" target="_blank" rel="noopener" class="btn-plugshare">View on PlugShare &#8599;</a>';
-    }
-    document.getElementById('d-actions').innerHTML = ah;
-    document.getElementById('detail-panel').style.display = 'block';
-  }
-
-  function showIssueDetail(issue) {
-    document.getElementById('d-name').textContent = issue.headline || issue.site_name || 'Issue';
-    document.getElementById('d-meta').innerHTML =
-      (issue.status ? '<strong>' + issue.status + '</strong>' : '') +
-      (issue.filing_reference ? ' &middot; ' + issue.filing_reference : '');
-    document.getElementById('d-actions').innerHTML = '';
-    document.getElementById('detail-panel').style.display = 'block';
-  }
-
-  document.getElementById('detail-close').onclick = function() {
-    document.getElementById('detail-panel').style.display = 'none';
-  };
-
-  // ── Stats ──
-  function updateStats(visible) {
-    var ports = visible.reduce(function(n, s) { return n + (parseInt(s.connectors) || 0); }, 0);
-    document.getElementById('stat-visible').textContent = visible.length.toLocaleString();
-    document.getElementById('stat-ports').textContent   = ports.toLocaleString();
-    document.getElementById('pin-count').textContent    = visible.length.toLocaleString() + ' public sites';
-  }
-
-  // ── Filters ──
-  function applyFilters() {
-    var visible = [];
-    clusterGroup.clearLayers();
-    markerObjs.forEach(function(obj) {
-      var s = obj.station;
-      var show = activeNetworks[s.network] !== false
-        && stationMatchesKw(s)
-        && (includeDealerships || s.facility_type !== 'CAR_DEALER')
-        && (includeRestricted  || s.access !== 'PRIVATE');
-      if (show) { clusterGroup.addLayer(obj.marker); visible.push(s); }
-    });
-    updateStats(visible);
-    document.getElementById('detail-panel').style.display = 'none';
-    updateCheckboxes();
-  }
-
-  // ── Network dropdown ──
-  var dropdownOpen = false;
-  var networkBtn = document.getElementById('network-btn');
-  var dropdown   = document.getElementById('network-dropdown');
-  var chevron    = document.getElementById('network-chevron');
-
-  function toggleDropdown() {
-    dropdownOpen = !dropdownOpen;
-    dropdown.classList.toggle('open', dropdownOpen);
-    networkBtn.classList.toggle('open', dropdownOpen);
-    chevron.classList.toggle('open', dropdownOpen);
-    networkBtn.setAttribute('aria-expanded', dropdownOpen);
-  }
-
-  networkBtn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    toggleDropdown();
-  });
-
-  document.addEventListener('click', function(e) {
-    if (dropdownOpen && !dropdown.contains(e.target) && e.target !== networkBtn) {
-      dropdownOpen = false;
-      dropdown.classList.remove('open');
-      networkBtn.classList.remove('open');
-      chevron.classList.remove('open');
-      networkBtn.setAttribute('aria-expanded', false);
-    }
-  });
 
   function updateCheckboxes() {
     dropdown.querySelectorAll('.net-check[data-network]').forEach(function(chk) {
@@ -865,6 +710,46 @@ body {
     .catch(function() {
       document.getElementById('map-loading').innerHTML = 'Could not load station data. Please reload.';
     });
+
+  // ── Locate Me ──
+  var locateBtn = document.getElementById('locate-btn');
+  var locateMarker = null;
+  locateBtn.addEventListener('click', function() {
+    if (!navigator.geolocation) {
+      locateBtn.classList.add('error');
+      locateBtn.title = 'Geolocation not supported';
+      return;
+    }
+    locateBtn.classList.add('locating');
+    navigator.geolocation.getCurrentPosition(
+      function(pos) {
+        locateBtn.classList.remove('locating', 'error');
+        var lat = pos.coords.latitude;
+        var lng = pos.coords.longitude;
+        if (lat < 37.6 || lat > 39.85 || lng < -80.0 || lng > -74.8) {
+          locateBtn.classList.add('error');
+          locateBtn.title = 'Location outside Maryland';
+          setTimeout(function() { locateBtn.classList.remove('error'); locateBtn.title = 'Find my location'; }, 3000);
+          return;
+        }
+        if (locateMarker) map.removeLayer(locateMarker);
+        locateMarker = L.circleMarker([lat, lng], {
+          radius: 8, fillColor: '#2551C0', fillOpacity: 1,
+          color: '#fff', weight: 2
+        }).addTo(map);
+        map.flyTo([lat, lng], 13, { duration: 0.8 });
+        locateBtn.title = 'Find my location';
+      },
+      function() {
+        locateBtn.classList.remove('locating');
+        locateBtn.classList.add('error');
+        locateBtn.title = 'Could not get location';
+        setTimeout(function() { locateBtn.classList.remove('error'); locateBtn.title = 'Find my location'; }, 3000);
+      },
+      { timeout: 10000, maximumAge: 30000 }
+    );
+  });
+
 
 })();
 </script>
