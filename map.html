@@ -173,12 +173,6 @@ body {
 }
 .stat-row { display: flex; justify-content: space-between; gap: 16px; color: var(--ink-mid); margin-bottom: 3px; }
 .stat-num { font-weight: 600; color: var(--ink); }
-#pin-count {
-  position: absolute; bottom: 20px; right: 12px; z-index: 400;
-  background: rgba(255,255,255,0.9); border: 1px solid var(--rule);
-  border-radius: 20px; padding: 5px 12px;
-  font-size: 12px; color: var(--ink-mid);
-}
 
 /* ── Detail panel ── */
 #detail-panel {
@@ -203,7 +197,6 @@ body {
 /* ── Mobile ── */
 @media (max-width: 600px) {
   #detail-panel { bottom: 0; right: 0; left: 0; width: 100%; border-radius: var(--radius) var(--radius) 0 0; max-height: 50vh; }
-  #pin-count { display: none; }
   #map-legend {
     bottom: 26px; left: 8px;
     padding: 7px 10px; font-size: 10px; line-height: 1.3;
@@ -265,8 +258,6 @@ body {
     <div class="stat-row"><span>Sites</span><span class="stat-num" id="stat-visible">-</span></div>
     <div class="stat-row"><span>Ports</span><span class="stat-num" id="stat-ports">-</span></div>
   </div>
-
-  <div id="pin-count"></div>
 
   <div id="detail-panel" role="region" aria-label="Station detail" aria-live="polite">
     <button id="detail-close" aria-label="Close">&#x2715;</button>
@@ -445,7 +436,6 @@ body {
     var ports = visible.reduce(function(n, s) { return n + (parseInt(s.connectors) || 0); }, 0);
     document.getElementById('stat-visible').textContent = visible.length.toLocaleString();
     document.getElementById('stat-ports').textContent   = ports.toLocaleString();
-    document.getElementById('pin-count').textContent    = visible.length.toLocaleString() + ' sites';
   }
 
   // ── Filters ──
